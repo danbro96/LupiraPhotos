@@ -78,6 +78,36 @@ describe('refreshIfNeeded', () => {
     expect(refreshTokensMock).not.toHaveBeenCalled();
   });
 
+  it('a forced refresh still POSTs when sentToken matches the current token', async () => {
+    seedSession(3_600_000);
+    refreshTokensMock.mockResolvedValue({ accessToken: 'tok-2', refreshToken: 'rt-2', expiresIn: 3600 });
+
+    expect(await useAuth.getState().refreshIfNeeded({ force: true, sentToken: 'tok-1' })).toBe('tok-2');
+    expect(refreshTokensMock).toHaveBeenCalledWith('rt-1');
+  });
+
+  it('concurrent 401s carrying the same sentToken share one POST', async () => {
+    seedSession(3_600_000);
+    let release!: (v: unknown) => void;
+    refreshTokensMock.mockReturnValue(new Promise((r) => { release = r; }));
+
+    const a = useAuth.getState().refreshIfNeeded({ force: true, sentToken: 'tok-1' });
+    const b = useAuth.getState().refreshIfNeeded({ force: true, sentToken: 'tok-1' });
+    release({ accessToken: 'tok-2', refreshToken: 'rt-2', expiresIn: 3600 });
+
+    expect([await a, await b]).toEqual(['tok-2', 'tok-2']);
+    expect(refreshTokensMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('signs out on a forced refresh with no refresh token, and limps along unforced', async () => {
+    seedSession(10_000);
+    useAuth.setState({ refreshToken: null });
+    expect(await useAuth.getState().refreshIfNeeded()).toBe('tok-1');
+    expect(await useAuth.getState().refreshIfNeeded({ force: true })).toBeNull();
+    expect(useAuth.getState().token).toBeNull();
+    expect(refreshTokensMock).not.toHaveBeenCalled();
+  });
+
   it('clears the session on a definitive failure', async () => {
     seedSession(10_000);
     refreshTokensMock.mockRejectedValue(new RefreshError(true, 'invalid_grant'));
@@ -114,6 +144,21 @@ describe('session persistence', () => {
     expect(s.token).toBe('tok-9');
     expect(s.refreshToken).toBe('rt-9');
     expect(s.user?.sub).toBe('user@test');
+  });
+
+  it('persists under the lupira.photos.* keys and a definitive failure wipes them', async () => {
+    useAuth.setState({ loaded: true, authMode: 'oidc' });
+    await useAuth.getState().setSession({ accessToken: 'tok-9', refreshToken: 'rt-9', expiresIn: 3600 });
+
+    expect([...store.keys()].sort()).toEqual(
+      ['lupira.photos.expiresAt', 'lupira.photos.refreshToken', 'lupira.photos.token', 'lupira.photos.userSub'],
+    );
+    expect(store.get('lupira.photos.token')).toBe('tok-9');
+    expect(store.get('lupira.photos.refreshToken')).toBe('rt-9');
+
+    refreshTokensMock.mockRejectedValue(new RefreshError(true, 'invalid_grant'));
+    await useAuth.getState().refreshIfNeeded({ force: true });
+    expect([...store.keys()]).toEqual([]);
   });
 
   it('keeps the previous refresh token when the endpoint rotates without issuing one', async () => {
