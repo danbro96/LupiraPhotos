@@ -12,7 +12,7 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://u.expo.dev/EAS_PROJECT_ID"
+      "url": "https://u.expo.dev/8d170a9b-f8ec-47e6-8f2a-9f0f1fd5ef28"
     },
     "platforms": [
       "android"
@@ -75,7 +75,7 @@
     "owner": "danbro96",
     "extra": {
       "eas": {
-        "projectId": "EAS_PROJECT_ID"
+        "projectId": "8d170a9b-f8ec-47e6-8f2a-9f0f1fd5ef28"
       }
     }
   }
