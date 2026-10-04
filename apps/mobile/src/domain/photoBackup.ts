@@ -1,4 +1,4 @@
-/** Camera-roll backup queue: pure types + selection rules. Exponential backoff via domain/backoff.ts and
+/** Camera-roll backup queue: pure types + selection rules. Exponential backoff via @danbro96/lupira-sync-core/backoff and
  *  parking after enough consecutive failures. */
 
 export type QueueState = 'pending' | 'uploading' | 'done' | 'parked';

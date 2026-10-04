@@ -60,7 +60,7 @@ export default [
           { from: { element: { type: 'config' } }, allow: [] },
           { allow: [{ to: { module: { origin: ['external', 'core'] } } }] },
           { disallow: [platform('@danbro96/*')] },
-          { allow: [platform(['@danbro96/lupira-tokens-*', '@danbro96/lupira-domain-*'])] },
+          { allow: [platform(['@danbro96/lupira-tokens-*', '@danbro96/lupira-domain-*', '@danbro96/lupira-sync-core'])] },
           { from: { element: { type: 'domain' } }, allow: [platform('@danbro96/lupira-http', 'apiError')] },
           ...fromEach(DATA_UP, [
             platform('@danbro96/lupira-http'),
