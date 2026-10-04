@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "Lupira Photos",
+    "slug": "lupira-photos",
+    "version": "1.0.0",
+    "scheme": "lupiraphotos",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "primaryColor": "#E76F51",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/EAS_PROJECT_ID"
+    },
+    "platforms": [
+      "android"
+    ],
+    "android": {
+      "package": "com.lupira.photos",
+      "predictiveBackGestureEnabled": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "lupiraphotos",
+              "host": "event"
+            },
+            {
+              "scheme": "lupiraphotos",
+              "host": "photo"
+            }
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      "@react-native-community/datetimepicker",
+      "expo-image",
+      [
+        "expo-media-library",
+        {
+          "granularPermissions": [
+            "photo",
+            "video"
+          ],
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0F172A"
+        }
+      ]
+    ],
+    "experiments": {
+      "reactCompiler": true
+    },
+    "owner": "danbro96",
+    "extra": {
+      "eas": {
+        "projectId": "EAS_PROJECT_ID"
+      }
+    }
+  }
+}

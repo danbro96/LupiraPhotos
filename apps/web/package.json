@@ -1,0 +1,48 @@
+{
+  "name": "lupira-photos-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@danbro96/lupira-domain-core": "0.1.0",
+    "@danbro96/lupira-domain-events": "0.1.0",
+    "@danbro96/lupira-domain-links": "0.2.0",
+    "@danbro96/lupira-domain-photos": "0.1.0",
+    "@danbro96/lupira-domain-places": "0.1.0",
+    "@danbro96/lupira-http": "0.1.0",
+    "@danbro96/lupira-tokens-core": "0.2.0",
+    "@danbro96/lupira-web-mui": "0.1.0",
+    "@danbro96/lupira-web-session": "0.1.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@lupira/photos-api": "*",
+    "@lupira/photos-domain": "*",
+    "@lupira/photos-tokens": "*",
+    "@mui/icons-material": "^9.3.1",
+    "@mui/material": "^9.3.1",
+    "@tanstack/react-query": "^5.101.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@rolldown/plugin-babel": "0.2.4",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "vite": "^8.0.16"
+  }
+}

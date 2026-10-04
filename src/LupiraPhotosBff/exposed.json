@@ -1,0 +1,31 @@
+{
+  "clusters": {
+    "cal-api": { "prefix": "/api" },
+    "geo-api": { "prefix": "/geo-api" },
+    "photo-api": { "prefix": "/photo-api" }
+  },
+  "groups": {},
+  "operations": {
+    "cal-api": [
+      "GET /items",
+      "GET /items/{id}",
+      "GET /relations/edges",
+      "POST /items/{id}/relations/batch",
+      "POST /items/{id}/relations/batch/delete"
+    ],
+    "photo-api": [
+      "DELETE /photos/trash",
+      "DELETE /photos/{id}",
+      "GET /photos",
+      "GET /photos/places",
+      "GET /photos/stats",
+      "GET /photos/{id}",
+      "POST /photos",
+      "POST /photos/lookup",
+      "POST /photos/{id}/complete",
+      "POST /photos/{id}/reprocess",
+      "POST /photos/{id}/restore",
+      "POST /photos/{id}/trash"
+    ]
+  }
+}

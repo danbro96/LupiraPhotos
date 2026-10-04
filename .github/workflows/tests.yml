@@ -1,0 +1,56 @@
+name: tests
+
+on:
+  workflow_call:
+
+env:
+  SOLUTION: LupiraPhotosBff.slnx
+  PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test ${{ env.SOLUTION }} -c Release
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm i -g npm@12
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  # The committed contract, route table and client must match what a build would emit right now.
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm i -g npm@12
+      - run: npm ci
+      - name: contract-drift
+        run: |
+          dotnet build src/LupiraPhotosBff/LupiraPhotosBff.csproj -c Release -v q --nologo
+          git diff --exit-code -- openapi/
+      - run: npm run gen:api
+      - name: client-drift
+        run: git diff --exit-code -- packages/api/src/generated/

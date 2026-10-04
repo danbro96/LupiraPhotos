@@ -1,0 +1,3338 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "LupiraPhotos BFF",
+    "version": "v1"
+  },
+  "paths": {
+    "/auth/user": {
+      "get": {
+        "tags": [
+          "LupiraPhotosBff"
+        ],
+        "operationId": "GetSession",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photo-api/photos": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Declare an asset (idempotent) and receive a presigned upload URL while bytes are pending.",
+        "operationId": "DeclarePhoto",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclarePhotoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclaredPhotoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash.",
+        "operationId": "ListPhotos",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "bbox",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetKind"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetStatus"
+            }
+          },
+          {
+            "name": "located",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "place",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceAlbum",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trashed",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PhotoSort"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/{id}/complete": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Verify the uploaded bytes and queue processing (idempotent).",
+        "operationId": "CompletePhotoUpload",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/{id}/reprocess": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Re-queue a Ready or Failed asset through the processing pipeline.",
+        "operationId": "ReprocessPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/{id}/trash": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Move an asset to the trash (idempotent). It keeps its bytes and status until restored or purged.",
+        "operationId": "TrashPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/{id}/restore": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Take an asset back out of the trash (idempotent).",
+        "operationId": "RestorePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/lookup": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Hydrate up to 200 assets by id — turns relation references into renderable items.",
+        "operationId": "LookupPhotos",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupPhotosRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/stats": {
+      "get": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Library totals and counts by kind, status, geotag source and month.",
+        "operationId": "GetPhotoStats",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoStats"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/places": {
+      "get": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Place labels by asset count, most used first — suggestions for the place filter (q = substring).",
+        "operationId": "ListPhotoPlaces",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhotoPlaceCount"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/{id}": {
+      "get": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "One asset with presigned original + thumbnail URLs.",
+        "operationId": "GetPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Delete an asset permanently, trashed or not: objects first, then the document.",
+        "operationId": "DeletePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/trash": {
+      "delete": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Permanently delete every trashed asset.",
+        "operationId": "EmptyPhotoTrash",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/items": {
+      "get": {
+        "tags": [
+          "cal"
+        ],
+        "summary": "Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read.",
+        "operationId": "SearchItems",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "calendarId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parentId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "contactId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "desc",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CalendarItemOccurrenceDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/items/{id}": {
+      "get": {
+        "tags": [
+          "cal"
+        ],
+        "summary": "Get a single calendar item.",
+        "operationId": "GetItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarItemDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/items/{id}/relations/batch": {
+      "post": {
+        "tags": [
+          "cal"
+        ],
+        "summary": "Link many references of one kind to an item at once (idempotent per reference) — e.g. an album's photos to its event.",
+        "operationId": "CreateItemRelationsBatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRelationsBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RelationDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/items/{id}/relations/batch/delete": {
+      "post": {
+        "tags": [
+          "cal"
+        ],
+        "summary": "Unlink many references of one kind from an item at once (idempotent: references with no matching edge are ignored).",
+        "operationId": "DeleteItemRelationsBatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRelationsBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/relations/edges": {
+      "get": {
+        "tags": [
+          "cal"
+        ],
+        "summary": "Every edge of one kind the caller can see, with its item and reference — e.g. all photo links.",
+        "operationId": "ListRelationEdges",
+        "parameters": [
+          {
+            "name": "toKind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RelationDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionKind": {
+        "enum": [
+          "SendCheckIn",
+          "Notify",
+          "CreateLinkedTask",
+          "ExpireTarget",
+          "RescheduleSelf",
+          "RunJob",
+          "Rescore"
+        ],
+        "description": "A deterministic, no-LLM action executed directly at fire time."
+      },
+      "AssetKind": {
+        "enum": [
+          "Photo",
+          "Video"
+        ]
+      },
+      "AssetStatus": {
+        "enum": [
+          "Declared",
+          "Uploaded",
+          "Processing",
+          "Ready",
+          "Failed",
+          "Duplicate"
+        ]
+      },
+      "AvailabilityStatus": {
+        "enum": [
+          "Office",
+          "Home",
+          "Vacation",
+          "Sick",
+          "Leave"
+        ],
+        "description": "A presence/availability segment's status. A day may hold several segments (whole-day or timed)."
+      },
+      "BookingDetail": {
+        "required": [
+          "providerContactId",
+          "confirmationNumber",
+          "reference",
+          "url",
+          "amount",
+          "currency",
+          "partySize"
+        ],
+        "type": "object",
+        "properties": {
+          "providerContactId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "confirmationNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reference": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "amount": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partySize": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          }
+        },
+        "description": "A reservation/confirmation attached to any category (a booked meal, a ticketed outing, a hotel, a flight).\n            `ProviderContactId` reuses a `Contact` (airline, hotel, restaurant, venue); `PartySize` covers a\n            table/seat reservation; `Amount`/`Currency` the paid cost."
+      },
+      "CalendarEntryStatus": {
+        "enum": [
+          "Proposed",
+          "Accepted",
+          "Removed"
+        ],
+        "description": "Curation state of a CalendarItem within a calendar. `Removed` is retained as a sync tombstone."
+      },
+      "CalendarItemDto": {
+        "required": [
+          "id",
+          "externalId",
+          "isAllDay",
+          "metadata",
+          "attendees",
+          "calendars",
+          "etag",
+          "createdAt",
+          "updatedAt",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              }
+            ]
+          },
+          "isAllDay": {
+            "type": "boolean"
+          },
+          "startsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "startDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "startPrecision": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DatePrecision"
+              }
+            ]
+          },
+          "endPrecision": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DatePrecision"
+              }
+            ]
+          },
+          "startTimezone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recurrenceRule": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "excludedOccurrences": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "description": "Recurring items: unmodified starts removed from the series."
+          },
+          "extraOccurrences": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "description": "Recurring items: one-off starts added to the series."
+          },
+          "occurrenceOverrides": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/OccurrenceOverride"
+            },
+            "description": "Recurring items: occurrences that deviate from the series (null members inherit)."
+          },
+          "category": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemCategory"
+              }
+            ]
+          },
+          "details": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemDetails"
+              }
+            ]
+          },
+          "placeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "locationLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "parentItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "tags": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "prompt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Event-bound payload (server-side only). At most one of ItemPrompt? CalendarItemDto.Prompt/ItemAction? CalendarItemDto.Action is set.",
+                "$ref": "#/components/schemas/ItemPrompt"
+              }
+            ]
+          },
+          "action": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemAction"
+              }
+            ]
+          },
+          "completeness": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "How well-documented this item is (null = not applicable, e.g. exempt kinds/calendars). Drives Elicit ranking.",
+                "$ref": "#/components/schemas/CompletenessScore"
+              }
+            ]
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemAttendeeDto"
+            }
+          },
+          "calendars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarMembershipDto"
+            }
+          },
+          "etag": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Server-side timestamps (from the event timeline) + stream version — the ordering/versioning\n            surface offline clients key on. `Etag` stays content-derived and is orthogonal.",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CalendarItemOccurrenceDto": {
+        "required": [
+          "id",
+          "isAllDay",
+          "start",
+          "calendarIds",
+          "childCount",
+          "etag"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "placeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "locationLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isAllDay": {
+            "type": "boolean"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "calendarIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Accepted calendar memberships, limited to calendars the caller can read."
+          },
+          "category": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemCategory"
+              }
+            ]
+          },
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              }
+            ]
+          },
+          "tags": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "parentItemId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Hierarchy link (e.g. the trip a leg belongs to). Title only when the caller can read the parent.",
+            "format": "uuid"
+          },
+          "parentTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "childCount": {
+            "type": "integer",
+            "description": "Direct children visible to the caller, independent of the current filters.",
+            "format": "int32"
+          },
+          "completeness": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "The item's own completeness (same across its occurrences; null = not applicable), so search results rank directly.",
+                "$ref": "#/components/schemas/CompletenessScore"
+              }
+            ]
+          },
+          "origin": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Provenance of a read-time-projected occurrence (e.g. Birthdays → a contact). Null for stored items.",
+                "$ref": "#/components/schemas/OccurrenceOrigin"
+              }
+            ]
+          },
+          "etag": {
+            "type": "string"
+          }
+        },
+        "description": "A single concrete occurrence of an item within a search window (recurrences expanded)."
+      },
+      "CalendarMembershipDto": {
+        "required": [
+          "calendarId",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "calendarId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CalendarEntryStatus"
+          }
+        }
+      },
+      "CameraDto": {
+        "type": "object",
+        "properties": {
+          "make": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lens": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "focalLengthMm": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "fNumber": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "exposureSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "iso": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "software": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CapturedBySource": {
+        "enum": [
+          "CameraOwner",
+          "Folder",
+          "Uploader",
+          "Manual"
+        ]
+      },
+      "CompletenessGap": {
+        "required": [
+          "field",
+          "weight",
+          "severity"
+        ],
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "format": "double"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/GapSeverity"
+          }
+        },
+        "description": "A field the record is missing or thin on, with its rubric weight (heavier = ask first)."
+      },
+      "CompletenessScore": {
+        "required": [
+          "score",
+          "rubricVersion",
+          "gaps"
+        ],
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "format": "double"
+          },
+          "rubricVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompletenessGap"
+            }
+          }
+        },
+        "description": "How well-documented a record is: `Score` 0..1 (Σ weight·presence / Σ weight), the unmet\n            fields ranked by missing mass (weight·absence, largest first), and the rubric version that produced it.\n            `null` (not this type) means \"not applicable\"."
+      },
+      "CreateRelationsBatchRequest": {
+        "required": [
+          "toKind",
+          "relationType",
+          "toRefs"
+        ],
+        "type": "object",
+        "properties": {
+          "toKind": {
+            "type": "string"
+          },
+          "relationType": {
+            "type": "string"
+          },
+          "toRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Many references of one kind linked to one item in a single call (e.g. an album's photos to its event)."
+      },
+      "DatePrecision": {
+        "enum": [
+          "Exact",
+          "Day",
+          "Month",
+          "Year",
+          "Approximate"
+        ]
+      },
+      "DeclaredPhotoResponse": {
+        "required": [
+          "assetId",
+          "status",
+          "requiredHeaders"
+        ],
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetStatus"
+          },
+          "uploadUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uploadExpiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "requiredHeaders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers the PUT must echo — they are part of the presigned signature."
+          }
+        },
+        "description": "Declare outcome. UploadUrl is present only while the asset still needs bytes (status\n            Declared); an already-uploaded asset returns its status so the client skips the transfer."
+      },
+      "DeclarePhotoRequest": {
+        "required": [
+          "deviceId",
+          "mediaStoreId",
+          "contentType",
+          "sizeBytes",
+          "takenAt"
+        ],
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string"
+          },
+          "mediaStoreId": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "width": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "capturedByContactId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The photographer's contact — the phone sends its owner's own contact.",
+            "format": "uuid"
+          }
+        },
+        "description": "Client-side MediaStore metadata for one asset. (DeviceId, MediaStoreId) under the caller is\n            the idempotency key — retrying a declare returns the same asset."
+      },
+      "DeleteRelationsBatchRequest": {
+        "required": [
+          "toKind",
+          "relationType",
+          "toRefs"
+        ],
+        "type": "object",
+        "properties": {
+          "toKind": {
+            "type": "string"
+          },
+          "relationType": {
+            "type": "string"
+          },
+          "toRefs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Many references of one kind unlinked from one item in a single call (e.g. photos removed from an event's album)."
+      },
+      "FallbackMode": {
+        "enum": [
+          "Retry",
+          "Ask",
+          "Drop"
+        ],
+        "description": "On a missed contract: retry once then ask (Retry), ask immediately (Ask), or drop (Drop)."
+      },
+      "GapSeverity": {
+        "enum": [
+          "Weak",
+          "Absent"
+        ],
+        "description": "A field is fully present, weak/partial (0.5), or absent."
+      },
+      "GeotagSource": {
+        "enum": [
+          "None",
+          "ExifGps",
+          "LocationHistory",
+          "Folder",
+          "Manual"
+        ]
+      },
+      "GpsRejectionDto": {
+        "required": [
+          "latitude",
+          "longitude",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/GpsRejectionReason"
+          }
+        },
+        "description": "A fix the GPS sweep rejected; processing skips it until restored."
+      },
+      "GpsRejectionReason": {
+        "enum": [
+          "Spike",
+          "Repeat"
+        ]
+      },
+      "ItemAction": {
+        "required": [
+          "kind",
+          "target",
+          "paramsJson",
+          "fire",
+          "enabled"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ActionKind"
+          },
+          "target": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Ref"
+              }
+            ]
+          },
+          "paramsJson": {
+            "type": "string"
+          },
+          "fire": {
+            "$ref": "#/components/schemas/PromptFire"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "description": "A deterministic payload executed directly (no LLM). `ParamsJson` carries the frozen params (e.g. a SendCheckIn message)."
+      },
+      "ItemAttendeeDto": {
+        "required": [
+          "participationId",
+          "contactId",
+          "role",
+          "status",
+          "invitedAt",
+          "respondedAt",
+          "attendedAt",
+          "leftAt"
+        ],
+        "type": "object",
+        "properties": {
+          "participationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contactId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "$ref": "#/components/schemas/ParticipationRole"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ParticipationStatus"
+          },
+          "invitedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "respondedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "attendedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "leftAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        },
+        "description": "One attendee's participation, composed from the participation events."
+      },
+      "ItemCategory": {
+        "enum": [
+          "General",
+          "Meeting",
+          "Appointment",
+          "Meal",
+          "Occasion",
+          "Outing",
+          "Trip",
+          "Stay",
+          "Activity",
+          "Focus",
+          "Chore"
+        ]
+      },
+      "ItemDetails": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BookingDetail"
+              }
+            ]
+          },
+          "travel": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TravelLeg"
+              }
+            ]
+          },
+          "presence": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PresenceDetail"
+              }
+            ]
+          }
+        },
+        "description": "Composable, category-independent detail for a CalendarItem: any of a reservation (BookingDetail? ItemDetails.Booking),\na movement leg (TravelLeg? ItemDetails.Travel, a `Trip` only), or an availability segment (PresenceDetail? ItemDetails.Presence). Each is\nan optional value object rather than a per-kind member, so one event can carry several at once (a booked flight sets both\nBookingDetail? ItemDetails.Booking and TravelLeg? ItemDetails.Travel). Location (venue, hotel, clinic) uses the item's `PlaceId`\n(a LupiraGeoApi place id) + `LocationLabel`; provider/driver references reuse a `Contact` id."
+      },
+      "ItemPrompt": {
+        "required": [
+          "intent",
+          "target",
+          "instruction",
+          "output",
+          "tools",
+          "tier",
+          "onMiss",
+          "fire",
+          "enabled"
+        ],
+        "type": "object",
+        "properties": {
+          "intent": {
+            "$ref": "#/components/schemas/PromptIntent"
+          },
+          "target": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Ref"
+              }
+            ]
+          },
+          "instruction": {
+            "type": "string"
+          },
+          "output": {
+            "$ref": "#/components/schemas/OutputKind"
+          },
+          "tools": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "tier": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ModelTier"
+              }
+            ]
+          },
+          "onMiss": {
+            "$ref": "#/components/schemas/FallbackMode"
+          },
+          "fire": {
+            "$ref": "#/components/schemas/PromptFire"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "description": "An LLM-interpreted, contracted payload → an agent run. Declared at authoring time; enforced by assistant-api at fire time."
+      },
+      "ItemStatus": {
+        "enum": [
+          "Tentative",
+          "Confirmed",
+          "Cancelled"
+        ]
+      },
+      "JsonObject": {
+        "type": "object"
+      },
+      "LookupPhotosRequest": {
+        "required": [
+          "ids"
+        ],
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "description": "Hydrates a set of asset ids in one call — used to turn calendar-item relation references\n            into renderable items."
+      },
+      "ModelTier": {
+        "enum": [
+          "Small",
+          "Medium",
+          "Large"
+        ]
+      },
+      "OccurrenceOrigin": {
+        "required": [
+          "kind",
+          "sourceId"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/OriginKind"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "description": "Ties a projected occurrence back to the entity it was derived from — the birthday occurrence's\n            Guid OccurrenceOrigin.SourceId is the contact whose birthday it is."
+      },
+      "OccurrenceOverride": {
+        "required": [
+          "originalStart",
+          "startsAt",
+          "endsAt",
+          "title",
+          "description",
+          "status",
+          "locationLabel"
+        ],
+        "type": "object",
+        "properties": {
+          "originalStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemStatus"
+              }
+            ]
+          },
+          "locationLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "A change to one occurrence of a recurring item, identified by the start it would have had unchanged\n            (DateTimeOffset OccurrenceOverride.OriginalStart, UTC; an all-day series uses the date at 00:00Z). Null members inherit from the series;\n            ItemStatus.Cancelled drops the occurrence."
+      },
+      "OriginKind": {
+        "enum": [
+          "Birthday"
+        ],
+        "description": "What a read-time-projected occurrence was synthesized from."
+      },
+      "OutputKind": {
+        "enum": [
+          "RecordEdit",
+          "Event",
+          "Task",
+          "Message",
+          "Summary",
+          "Question",
+          "Relation",
+          "None"
+        ],
+        "description": "The ProposedAction kind a run is contracted to yield (assistant-api validates against it; cal-api only stores it)."
+      },
+      "ParticipationRole": {
+        "enum": [
+          "Chair",
+          "RequiredParticipant",
+          "OptionalParticipant",
+          "NonParticipant"
+        ],
+        "description": "An attendee's role in an item."
+      },
+      "ParticipationStatus": {
+        "enum": [
+          "NeedsAction",
+          "Accepted",
+          "Declined",
+          "Tentative",
+          "Delegated"
+        ],
+        "description": "An attendee's RSVP."
+      },
+      "PhotoAssetDto": {
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "takenAt",
+          "geotagSource",
+          "contentType",
+          "sizeBytes",
+          "createdAt",
+          "takenAtSource"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AssetKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetStatus"
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "geotagSource": {
+            "$ref": "#/components/schemas/GeotagSource"
+          },
+          "placeLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "width": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uploadedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "processedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lastError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "duplicateOfId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "On a Duplicate only: the asset that holds the bytes.",
+            "format": "uuid"
+          },
+          "camera": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CameraDto"
+              }
+            ]
+          },
+          "gpsRejection": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GpsRejectionDto"
+              }
+            ]
+          },
+          "takenAtSource": {
+            "$ref": "#/components/schemas/TakenAtSource"
+          },
+          "capturedByContactId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "capturedBySource": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CapturedBySource"
+              }
+            ]
+          },
+          "sourceAlbum": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "trashedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "purgesAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the trash is purged of it (`TrashedAt` + retention); null unless trashed.",
+            "format": "date-time"
+          },
+          "thumbUrl": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Presigned GET, long expiry; null until processed."
+          },
+          "originalUrl": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Presigned GET, short expiry; only on the single-asset endpoint."
+          }
+        }
+      },
+      "PhotoListItemDto": {
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "takenAt",
+          "geotagSource",
+          "contentType",
+          "sizeBytes",
+          "takenAtSource"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AssetKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssetStatus"
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "placeLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "width": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "height": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "durationSeconds": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "geotagSource": {
+            "$ref": "#/components/schemas/GeotagSource"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastError": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Only set on a Failed asset — lets the health view explain itself without a per-item fetch."
+          },
+          "duplicateOfId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "On a Duplicate only: the asset that holds the bytes.",
+            "format": "uuid"
+          },
+          "camera": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CameraDto"
+              }
+            ]
+          },
+          "gpsRejection": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GpsRejectionDto"
+              }
+            ]
+          },
+          "takenAtSource": {
+            "$ref": "#/components/schemas/TakenAtSource"
+          },
+          "capturedByContactId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "capturedBySource": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CapturedBySource"
+              }
+            ]
+          },
+          "sourceAlbum": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "trashedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "purgesAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the trash is purged of it (`TrashedAt` + retention); null unless trashed.",
+            "format": "date-time"
+          },
+          "thumbUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PhotoListResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoListItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Opaque keyset cursor; absent on the last page."
+          }
+        }
+      },
+      "PhotoPlaceCount": {
+        "required": [
+          "label",
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PhotoSort": {
+        "enum": [
+          "TakenAtDesc",
+          "TakenAtAsc"
+        ]
+      },
+      "PhotoStats": {
+        "required": [
+          "totalAssets",
+          "totalBytes",
+          "trashedAssets",
+          "byKind",
+          "byStatus",
+          "byGeotagSource",
+          "byMonth",
+          "byCamera"
+        ],
+        "type": "object",
+        "properties": {
+          "totalAssets": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trashedAssets": {
+            "type": "integer",
+            "description": "Excluded from every other figure.",
+            "format": "int64"
+          },
+          "byKind": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "byStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "byGeotagSource": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "byMonth": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "byCamera": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "\"Sony G8341\" → count; what the importer's camera map is built from."
+          }
+        }
+      },
+      "PresenceDetail": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/AvailabilityStatus"
+          }
+        },
+        "description": "A presence/availability segment's status; the span is the item itself (whole-day or timed). Replaces the old\n            Availability item kind — presence items live on the availability calendar and are exempt from completeness scoring."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "traceId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "RFC 9457 problem details."
+      },
+      "PromptFire": {
+        "required": [
+          "kind",
+          "offsetMinutes",
+          "allDayAt"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PromptFireKind"
+          },
+          "offsetMinutes": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "allDayAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "time"
+          }
+        },
+        "description": "Fire timing (flattened union): OnStart/OnEnd carry nothing; Offset uses `OffsetMinutes` (negative = lead time);\n            AllDayAt uses `AllDayAt` (local wall-clock time on the occurrence date)."
+      },
+      "PromptFireKind": {
+        "enum": [
+          "OnStart",
+          "OnEnd",
+          "Offset",
+          "AllDayAt"
+        ],
+        "description": "When a payload fires relative to its item's occurrence."
+      },
+      "PromptIntent": {
+        "enum": [
+          "EnrichRecord",
+          "Research",
+          "CreateFollowUp",
+          "Monitor",
+          "Summarise",
+          "AskUser"
+        ],
+        "description": "What an LLM-interpreted run should accomplish."
+      },
+      "Ref": {
+        "required": [
+          "kind",
+          "id",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/RefKind"
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "A reference the fired payload acts on. `Id` for Event/Contact/Task; `Url` for External."
+      },
+      "RefKind": {
+        "enum": [
+          "Event",
+          "Contact",
+          "Task",
+          "External"
+        ],
+        "description": "What a Ref points at."
+      },
+      "RelationDto": {
+        "required": [
+          "id",
+          "fromKind",
+          "fromId",
+          "toKind",
+          "toRef",
+          "relationType"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromKind": {
+            "type": "string"
+          },
+          "fromId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toKind": {
+            "type": "string"
+          },
+          "toRef": {
+            "type": "string"
+          },
+          "relationType": {
+            "type": "string"
+          },
+          "metadata": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/JsonObject"
+              }
+            ]
+          }
+        }
+      },
+      "TakenAtSource": {
+        "enum": [
+          "Device",
+          "Exif",
+          "Sidecar",
+          "Filename",
+          "Folder",
+          "Album",
+          "Upload",
+          "FileTime",
+          "Manual"
+        ],
+        "description": "Where DateTimeOffset PhotoAsset.TakenAt came from. TakenAtSource.Device is first so documents\n            written before the field existed (phone backups) read as it."
+      },
+      "TransportMode": {
+        "enum": [
+          "Flight",
+          "Train",
+          "Metro",
+          "Tram",
+          "Bus",
+          "Coach",
+          "Car",
+          "Ferry",
+          "Bike",
+          "Walk",
+          "Other"
+        ],
+        "description": "Mode of a TravelLeg. Rail split: `Train` = mainline/commuter, `Metro` = rapid transit,\n            `Tram` = light/narrow-gauge rail; `Coach` = long-distance bus vs local `Bus`."
+      },
+      "TravelLeg": {
+        "required": [
+          "mode",
+          "toPlaceId",
+          "fromPlaceId",
+          "departAt",
+          "arriveAt",
+          "carrier",
+          "serviceNumber",
+          "departurePoint",
+          "arrivalPoint",
+          "seat",
+          "driverContactId"
+        ],
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/TransportMode"
+          },
+          "toPlaceId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "fromPlaceId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "departAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "arriveAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "carrier": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "serviceNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "departurePoint": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "arrivalPoint": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "seat": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "driverContactId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "toLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fromLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "One leg of a `Trip`. Mode-agnostic: `DeparturePoint`/`ArrivalPoint` generalize gate/platform/stop,\n            `Carrier` the airline/operator, `ServiceNumber` the flight/train/service number. `ToPlaceId`/`FromPlaceId`\n            are LupiraGeoApi place ids with denormalized `ToLabel`/`FromLabel`; `DriverContactId` names the driver\n            for a TransportMode.Car leg."
+      },
+      "UserInfo": {
+        "required": [
+          "email",
+          "groups",
+          "isAdmin"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isAdmin": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Cookie": {
+        "type": "apiKey",
+        "description": "Session cookie minted by the BFF's OIDC login.",
+        "name": "__Host-lupira-photos",
+        "in": "cookie"
+      },
+      "Bearer": {
+        "type": "http",
+        "description": "Authentik access token from a native client; audience must include lupira-photos.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "LupiraPhotosBff"
+    }
+  ]
+}

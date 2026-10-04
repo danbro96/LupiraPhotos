@@ -1,0 +1,17 @@
+/* Tokens all come from the MUI theme (ui/theme/muiTheme.ts) fed by @lupira/photos-tokens. What is left
+   here is what no component can own. MUI injects unlayered, so it outranks these rules — nothing here
+   may target an element that also carries an MUI component. */
+
+@layer bespoke {
+  * {
+    box-sizing: border-box;
+  }
+  /* Margin/background/color come from CssBaseline (theme vars). */
+  body {
+    min-height: 100vh;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+  }
+}

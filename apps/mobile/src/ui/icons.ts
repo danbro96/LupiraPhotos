@@ -1,0 +1,74 @@
+import type { IconName } from '@danbro96/lupira-tokens-core/icons';
+
+/**
+ * The estate's icon vocabulary, resolved to `MaterialIcons` (Google Material — the same family the
+ * SPAs render through `@mui/icons-material`). Paper's `icon` prop defaults to MaterialCommunityIcons,
+ * so `App.tsx` overrides the renderer via `settings={{ icon }}`; after that override every `icon=`
+ * string must be a name from here. Pass `ICONS.x`, never a bare string — a wrong name renders
+ * nothing at all rather than failing the build.
+ */
+export const ICONS = {
+  account: 'account-circle',
+  add: 'add',
+  alert: 'error-outline',
+  cake: 'cake',
+  calendar: 'calendar-month',
+  celebration: 'celebration',
+  check: 'check',
+  checkBox: 'check-box',
+  checkCircle: 'check-circle',
+  circle: 'radio-button-unchecked',
+  chevronLeft: 'chevron-left',
+  chevronRight: 'chevron-right',
+  cleaning: 'cleaning-services',
+  clear: 'clear',
+  close: 'close',
+  contacts: 'contacts',
+  delete: 'delete',
+  deleteForever: 'delete-forever',
+  download: 'file-download',
+  email: 'email',
+  event: 'event',
+  expand: 'expand-more',
+  filter: 'filter-list',
+  group: 'group',
+  hotel: 'hotel',
+  inbox: 'inbox',
+  info: 'info-outline',
+  layers: 'layers',
+  link: 'link',
+  linkOff: 'link-off',
+  locationOff: 'location-off',
+  heading: 'explore',
+  locate: 'my-location',
+  locateFixed: 'gps-fixed',
+  lock: 'lock',
+  luggage: 'luggage',
+  map: 'map',
+  medical: 'medical-services',
+  menu: 'menu',
+  more: 'more-horiz',
+  person: 'person',
+  photos: 'photo-library',
+  place: 'place',
+  restore: 'restore-from-trash',
+  restaurant: 'restaurant',
+  robot: 'smart-toy',
+  run: 'directions-run',
+  schedule: 'schedule',
+  search: 'search',
+  settings: 'settings',
+  star: 'star',
+  starOutline: 'star-border',
+  target: 'track-changes',
+  tools: 'construction',
+  tune: 'tune',
+  upload: 'cloud-upload',
+  walk: 'directions-walk',
+} as const;
+
+export type IconKey = keyof typeof ICONS;
+
+/** Every token icon concept has a glyph here: a concept added to `@danbro96/lupira-tokens-core/icons` and not mapped
+ *  is a compile error, not a blank icon. */
+export const ICON_BY_NAME: Record<IconName, string> = ICONS;

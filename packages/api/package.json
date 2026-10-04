@@ -1,0 +1,29 @@
+{
+  "name": "@lupira/photos-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "npm run spec && orval",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "spec": "dotnet build ../../src/LupiraPhotosBff/LupiraPhotosBff.csproj -v q --nologo"
+  },
+  "exports": {
+    "./models": "./src/generated/models/index.ts",
+    "./query/*": "./src/generated/query/*/*.ts",
+    "./fetch/*": "./src/generated/fetch/*/*.ts"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.101.4"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.101.4",
+    "orval": "^8.23.0"
+  },
+  "dependencies": {
+    "@danbro96/lupira-http": "0.1.0"
+  }
+}

@@ -1,0 +1,51 @@
+services:
+  photos-web:
+    image: danbro96/lupira-photos-web:${IMAGE_TAG:-latest}
+    container_name: lupira-photos-web
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Auth__Bearer__Audience: lupira-photos
+      Auth__Oidc__Authority: ${AUTH_AUTHORITY:-https://auth.lupira.com/application/o/lupira-photos/}
+      Auth__Oidc__ClientId: ${AUTH_CLIENT_ID:-lupira-photos}
+      # Audience scopes appended to the base OIDC scopes (indexes 0-4 in appsettings). Each triggers an
+      # Authentik mapping that stamps the aud its upstream requires; without them the token is rejected.
+      Auth__Oidc__Scopes__5: ${AUTH_SCOPE_PHOTO:-lupira-photo-aud}
+      Auth__Oidc__Scopes__6: ${AUTH_SCOPE_CAL:-lupira-cal-aud}
+      Auth__Oidc__Scopes__7: ${AUTH_SCOPE_GEO:-lupira-geo-aud}
+      Depz__ProbeKey: ${DEPZ_PROBE_KEY:-}
+      ReverseProxy__Clusters__photo-api__Destinations__primary__Address: ${PHOTO_API_BASE_URL:?required}
+      ReverseProxy__Clusters__cal-api__Destinations__primary__Address: ${CAL_API_BASE_URL:?required}
+      ReverseProxy__Clusters__geo-api__Destinations__primary__Address: ${GEO_API_BASE_URL:?required}
+      DataProtection__KeyPath: /keys
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:?required}
+      OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
+      OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-300000}
+      OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES:-deployment.environment=prod}
+    volumes:
+      - photos-web-keys:/keys
+    ports:
+      - "${PHOTOS_WEB_PORT:-42281}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/livez || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - medelynas_data
+      - medelynas_telemetry
+      - default
+
+networks:
+  medelynas_data:
+    external: true
+    name: medelynas_data
+  medelynas_telemetry:
+    external: true
+    name: medelynas_telemetry
+  default:
+    driver: bridge
+
+volumes:
+  photos-web-keys:

@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# .NET
+bin/
+obj/
+
+# Generated SPA output (client build → BFF wwwroot)
+src/LupiraPhotosBff/wwwroot/
+
+# Expo (apps/mobile): CNG native projects + local state — EAS/prebuild regenerate them
+.expo/
+apps/mobile/android/
+apps/mobile/ios/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+apps/mobile/modules/*/android/build/
+
+# TypeScript incremental build state
+*.tsbuildinfo

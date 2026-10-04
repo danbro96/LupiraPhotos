@@ -1,0 +1,16 @@
+{
+  "name": "@lupira/photos-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@danbro96/lupira-tokens-core": "0.2.0"
+  }
+}

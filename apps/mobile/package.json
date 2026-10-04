@@ -1,0 +1,82 @@
+{
+  "name": "lupira-photos-mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "prebuild": "expo prebuild --platform android",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@danbro96/lupira-domain-core": "0.1.0",
+    "@danbro96/lupira-domain-events": "0.1.0",
+    "@danbro96/lupira-domain-links": "0.2.0",
+    "@danbro96/lupira-domain-photos": "0.1.0",
+    "@danbro96/lupira-domain-places": "0.1.0",
+    "@danbro96/lupira-expo-diagnostics": "0.1.1",
+    "@danbro96/lupira-expo-feedback": "1.0.0",
+    "@danbro96/lupira-expo-oidc": "0.1.0",
+    "@danbro96/lupira-expo-paper": "0.1.1",
+    "@danbro96/lupira-expo-sqlite": "0.1.0",
+    "@danbro96/lupira-http": "0.1.0",
+    "@danbro96/lupira-tokens-core": "0.2.0",
+    "@expo/vector-icons": "^15.0.2",
+    "@lupira/photos-api": "*",
+    "@lupira/photos-domain": "*",
+    "@lupira/photos-tokens": "*",
+    "@react-native-community/datetimepicker": "9.1.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "@react-navigation/native": "^7.3.14",
+    "@react-navigation/native-stack": "^7.18.6",
+    "@sentry/react-native": "~7.11.0",
+    "@shopify/flash-list": "2.3.2",
+    "@tanstack/query-async-storage-persister": "5.103.2",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query-persist-client": "5.103.2",
+    "expo": "~57.0.25",
+    "expo-auth-session": "~57.0.13",
+    "expo-background-task": "~57.0.20",
+    "expo-clipboard": "~57.0.2",
+    "expo-constants": "~57.0.19",
+    "expo-crypto": "~57.0.3",
+    "expo-dev-client": "~57.0.19",
+    "expo-file-system": "~57.0.5",
+    "expo-haptics": "~57.0.3",
+    "expo-image": "~57.0.5",
+    "expo-media-library": "~57.0.5",
+    "expo-secure-store": "~57.0.4",
+    "expo-splash-screen": "~57.0.9",
+    "expo-sqlite": "~57.0.3",
+    "expo-status-bar": "~57.0.1",
+    "expo-task-manager": "~57.0.20",
+    "expo-updates": "~57.0.23",
+    "expo-web-browser": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-paper": "^5.15.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-worklets": "0.10.4",
+    "uuid": "^14.0.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "eslint-plugin-react-hooks": "^7.1.1"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "@shopify/flash-list",
+        "react-native-worklets"
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main, release/android]
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit
