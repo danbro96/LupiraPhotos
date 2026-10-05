@@ -5,10 +5,12 @@ import { getListPhotosQueryKey, listPhotos, lookupPhotos, useGetPhotoStats } fro
 import { groupByDay as groupDays, photoDayLabel, photoEventLinks, THUMB_SAFE_STALE_MS, type DayGroup } from '@lupira/photos-domain/photoFormat';
 import { PHOTO_LINK } from '@danbro96/lupira-domain-photos/photoLinks';
 import { filterPhotos } from '@lupira/photos-domain/photoFilter';
+import { savedPlaceBbox } from '@lupira/photos-domain/savedPlaces';
 import type { ListPhotosParams, PhotoListItemDto } from '@lupira/photos-api/models';
 import { getListRelationEdgesQueryKey, listRelationEdges, useSearchItems } from '@lupira/photos-api/query/cal';
 import { dayEndIso, dayStartIso } from '@danbro96/lupira-domain-core/time';
 import { captureWindow, EVENT_CANDIDATE_LIMIT } from '@danbro96/lupira-domain-photos/photoWindow';
+import { useSavedPlaces } from './useGeoPlaces';
 
 /** The gallery's read model. Filters live in URL params so a view is linkable and survives a reload. */
 
@@ -19,6 +21,8 @@ export type PhotoFilters = {
   kind: string;
   located: string;
   place: string;
+  /** A saved place's id: photos within its filter radius. */
+  near: string;
   status: string;
   event: string;
   /** 'true' shows the trash instead of the library. */
@@ -36,6 +40,7 @@ export function usePhotoFilters(): PhotoFilters {
     kind: params.get('kind') ?? '',
     located: params.get('located') ?? '',
     place: params.get('place') ?? '',
+    near: params.get('near') ?? '',
     status: params.get('status') ?? '',
     event: params.get('event') ?? '',
     trashed: params.get('trashed') ?? '',
@@ -45,12 +50,15 @@ export function usePhotoFilters(): PhotoFilters {
 }
 
 export function usePhotoLibrary(filters: PhotoFilters) {
+  const saved = useSavedPlaces();
+  const nearPlace = filters.near ? saved.places.find((s) => s.id === filters.near) : undefined;
   const params: ListPhotosParams = {
     sort: filters.sort,
     kind: (filters.kind || undefined) as ListPhotosParams['kind'],
     status: (filters.status || undefined) as ListPhotosParams['status'],
     located: filters.located === '' ? undefined : filters.located === 'true',
     place: filters.place || undefined,
+    bbox: (nearPlace && savedPlaceBbox(nearPlace)) || undefined,
     from: filters.from ? dayStartIso(filters.from) : undefined,
     to: filters.to ? dayEndIso(filters.to) : undefined,
     trashed: filters.trashed === 'true' || undefined,
@@ -64,7 +72,7 @@ export function usePhotoLibrary(filters: PhotoFilters) {
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
     staleTime: THUMB_SAFE_STALE_MS,
-    enabled: !filters.event,
+    enabled: !filters.event && !(filters.near && saved.isLoading),
   });
 
   // The photo API has no notion of events, so an event's set is the link map's ids, fetched whole.

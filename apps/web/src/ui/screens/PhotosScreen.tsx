@@ -19,13 +19,18 @@ import type { PhotoListItemDto } from '@lupira/photos-api/models';
 import { photoEmptyText } from '@lupira/photos-domain/photoFilter';
 import { SCRIM } from '@danbro96/lupira-tokens-core/color';
 import { usePhotoActions } from '../../state/usePhotoActions';
+import { withFilterParam } from '../../state/photoParams';
+import { aroundChips } from '../../state/photoPlaces';
+import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { errText } from '../errText';
-import { CalendarIcon, CheckboxBlankIcon, CheckboxIcon, CloseIcon, DeleteIcon, PlaceIcon } from '@danbro96/lupira-web-mui/icons';
+import { CalendarIcon, CheckboxBlankIcon, CheckboxIcon, CloseIcon, DeleteIcon, PlaceIcon, SavedPlaceIcon } from '@danbro96/lupira-web-mui/icons';
 import { useSnackbar } from '@danbro96/lupira-web-mui/SnackbarHost';
 import { WrapRow } from '../components/WrapRow';
 import { DayHeader } from '../components/photos/DayHeader';
 import { LinkEventDialog } from '../components/photos/LinkEventDialog';
 import { PhotoSearch } from '../components/photos/PhotoSearch';
+import { PlacesDialog } from '../components/photos/PlacesDialog';
+import { SetLocationDialog } from '../components/photos/SetLocationDialog';
 import { PhotoTimelineRail, PhotoWhenSelect } from '../components/photos/PhotoTimeline';
 import { PhotoViewer } from '../components/photos/PhotoViewer';
 import {
@@ -43,18 +48,15 @@ export function PhotosScreen() {
   const { data: stats } = usePhotoStats();
   const { items, isLoading, isFetching, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePhotoLibrary(filters);
   const { data: event } = useGetItem(filters.event, { query: { enabled: !!filters.event } });
+  const savedPlaces = useSavedPlaces().places;
+  const nearPlace = savedPlaces.find((s) => s.id === filters.near);
 
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
 
   // A filter change can take selected photos out of view, and acting on unseen photos would surprise.
   const setParam = (key: string, value: string | undefined) => {
     if (key !== 'photo') setSelected(new Set());
-    setParams((prev) => {
-      const next = new URLSearchParams(prev);
-      if (value) next.set(key, value);
-      else next.delete(key);
-      return next;
-    }, { replace: true });
+    setParams((prev) => withFilterParam(prev, key, value), { replace: true });
   };
 
   const setRange = (range: { from: string; to: string } | null) => {
@@ -96,6 +98,8 @@ export function PhotosScreen() {
 
   const anchor = useRef<string | null>(null);
   const [linking, setLinking] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [browsingPlaces, setBrowsingPlaces] = useState(false);
   const [confirming, setConfirming] = useState<'purge' | 'empty' | null>(null);
   const actions = usePhotoActions();
   const showSnack = useSnackbar();
@@ -187,7 +191,7 @@ export function PhotosScreen() {
   }, [hasNextPage, loadMore]);
 
   const emptyText = photoEmptyText({
-    ...filters, trashed: inTrash, located: filters.located === '' ? null : filters.located === 'true',
+    ...filters, place: filters.place || filters.near, trashed: inTrash, located: filters.located === '' ? null : filters.located === 'true',
   });
 
   return (
@@ -208,6 +212,7 @@ export function PhotosScreen() {
           ) : (
             <>
               <Button variant="outlined" size="small" onClick={() => setLinking(true)}>Link to event…</Button>
+              <Button variant="outlined" size="small" onClick={() => setLocating(true)}>Set location…</Button>
               {filters.event && (
                 <Button variant="outlined" size="small" onClick={() => void onUnlinkSelected()} disabled={actions.busy}>
                   Remove from event
@@ -269,6 +274,7 @@ export function PhotosScreen() {
             onEvent={(id) => setParam('event', id)}
             onPlace={(label) => setParam('place', label)}
           />
+          <Button size="small" variant="outlined" startIcon={<PlaceIcon />} onClick={() => setBrowsingPlaces(true)}>Places</Button>
           <TextField
             select size="small" label="Status" value={filters.status}
             onChange={(e) => setParam('status', e.target.value || undefined)}
@@ -285,6 +291,22 @@ export function PhotosScreen() {
           {filters.place && (
             <Chip icon={<PlaceIcon />} label={filters.place} onDelete={() => setParam('place', undefined)} />
           )}
+          {filters.near && (
+            <Chip
+              icon={<SavedPlaceIcon />}
+              label={`Around ${nearPlace?.label ?? 'a saved place'}`}
+              onDelete={() => setParam('near', undefined)}
+            />
+          )}
+          {!filters.event && !filters.near && aroundChips(savedPlaces).map((s) => (
+            <Chip
+              key={s.id}
+              icon={<SavedPlaceIcon />}
+              variant="outlined"
+              label={`Around ${s.label}`}
+              onClick={() => setParam('near', s.id)}
+            />
+          ))}
           {filters.event && (
             <Chip
               icon={<CalendarIcon />}
@@ -328,7 +350,9 @@ export function PhotosScreen() {
                   selecting={selecting}
                   allSelected={allSelected}
                   onToggleDay={() => toggleDay(day.items)}
+                  savedPlaces={savedPlaces}
                   onPlace={(label) => setParam('place', label)}
+                  onNear={(id) => setParam('near', id)}
                   onEvent={(id) => setParam('event', id)}
                 />
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 1, mb: 2 }}>
@@ -375,6 +399,17 @@ export function PhotosScreen() {
 
       {linking && (
         <LinkEventDialog photos={selectedPhotos} onClose={() => setLinking(false)} onLinked={() => setSelected(new Set())} />
+      )}
+
+      {locating && (
+        <SetLocationDialog photos={selectedPhotos} onClose={() => setLocating(false)} onApplied={() => setSelected(new Set())} />
+      )}
+
+      {browsingPlaces && (
+        <PlacesDialog
+          onPick={(label) => { setBrowsingPlaces(false); setParam('place', label); }}
+          onClose={() => setBrowsingPlaces(false)}
+        />
       )}
 
       <Dialog open={confirming !== null} onClose={() => setConfirming(null)}>

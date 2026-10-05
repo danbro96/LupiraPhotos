@@ -6,22 +6,26 @@ import Link from '@mui/material/Link';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useGetItem } from '@lupira/photos-api/query/cal';
-import { linkedEventIds, topPlaces } from '@lupira/photos-domain/photoFormat';
+import type { SavedPlaceDto } from '@lupira/photos-api/models';
+import { linkedEventIds } from '@lupira/photos-domain/photoFormat';
+import { dayPlaces } from '../../../state/photoPlaces';
 import type { PhotoDay } from '../../../state/usePhotoLibrary';
 import { CalendarIcon, MapIcon } from '@danbro96/lupira-web-mui/icons';
 import { siblingLinks } from '../../../config/siblings';
 
 /** A day's date, where it was and what it was — each a way to narrow the grid to it. */
-export function DayHeader({ day, links, selecting, allSelected, onToggleDay, onPlace, onEvent }: {
+export function DayHeader({ day, links, selecting, allSelected, savedPlaces, onToggleDay, onPlace, onNear, onEvent }: {
   day: PhotoDay;
   links: ReadonlyMap<string, readonly string[]>;
   selecting: boolean;
   allSelected: boolean;
+  savedPlaces: readonly SavedPlaceDto[];
   onToggleDay: () => void;
   onPlace: (label: string) => void;
+  onNear: (savedPlaceId: string) => void;
   onEvent: (eventId: string) => void;
 }) {
-  const places = topPlaces(day.items, 2);
+  const places = dayPlaces(day.items, savedPlaces, 2);
   const eventIds = linkedEventIds(day.items.map((i) => i.id), links).slice(0, 3);
   const located = day.items.some((i) => i.latitude != null);
 
@@ -33,13 +37,13 @@ export function DayHeader({ day, links, selecting, allSelected, onToggleDay, onP
       }}
     >
       <Typography variant="overline" sx={{ color: 'text.subtle' }}>{day.label}</Typography>
-      {places.map((label) => (
+      {places.map(({ label, savedPlaceId }) => (
         <Link
           key={label}
           component="button"
           variant="caption"
           underline="hover"
-          onClick={() => onPlace(label)}
+          onClick={() => (savedPlaceId ? onNear(savedPlaceId) : onPlace(label))}
           sx={{ color: 'text.subtle' }}
         >
           {label}

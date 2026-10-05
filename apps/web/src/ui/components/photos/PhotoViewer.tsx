@@ -12,9 +12,11 @@ import { fmtDateTime } from '@danbro96/lupira-domain-core/time';
 import { useGetPhoto, useReprocessPhoto } from '@lupira/photos-api/query/photo';
 import { formatCoords } from '@danbro96/lupira-domain-places/places';
 import type { PhotoListItemDto } from '@lupira/photos-api/models';
-import { fmtBytes, fmtDimensions, fmtDuration, geotagLabel, inTrashLine, originalIsViewable, purgeWarning } from '@lupira/photos-domain/photoFormat';
+import { fmtBytes, fmtDimensions, fmtDuration, geotagLabel, gpsRejectionLabel, inTrashLine, originalIsViewable, purgeWarning } from '@lupira/photos-domain/photoFormat';
+import { friendlyPlace } from '@lupira/photos-domain/savedPlaces';
 import { PHOTO_TEXT } from '@danbro96/lupira-domain-photos/photoLinks';
 import { SCRIM } from '@danbro96/lupira-tokens-core/color';
+import { useSavedPlaces } from '../../../state/useGeoPlaces';
 import { useInvalidatePhotos } from '../../../state/useInvalidate';
 import { usePhotoActions } from '../../../state/usePhotoActions';
 import { useIsPhone } from '../../hooks/useIsPhone';
@@ -23,6 +25,7 @@ import { useSnackbar } from '@danbro96/lupira-web-mui/SnackbarHost';
 import { siblingLinks } from '../../../config/siblings';
 import { DrawerSection } from '../DrawerSection';
 import { LinkToEvent } from './LinkToEvent';
+import { SetLocationDialog } from './SetLocationDialog';
 
 // Pinned to the stage's box: a percentage max-height on a grid child doesn't resolve, so a tall
 // screenshot would otherwise grow past the viewport.
@@ -49,6 +52,8 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
   const isPhone = useIsPhone();
   const [infoOpen, setInfoOpen] = useState(!isPhone);
   const [confirming, setConfirming] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const savedPlaces = useSavedPlaces().places;
   const rootRef = useRef<HTMLDivElement>(null);
 
   const index = siblings.findIndex((s) => s.id === photoId);
@@ -73,6 +78,8 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [confirming, prev, next, onNavigate]);
+
+  const friendly = photo ? friendlyPlace(photo, savedPlaces) : null;
 
   const src = photo
     ? (originalIsViewable(photo.contentType) ? photo.originalUrl ?? photo.thumbUrl : photo.thumbUrl) ?? undefined
@@ -174,7 +181,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
           <Box sx={{ width: { xs: 'auto', md: 340 }, maxHeight: { xs: '45%', md: 'none' }, p: 2, overflowY: 'auto' }}>
             {photo && (
               <>
-                <Typography variant="h6">{photo.placeLabel ?? 'Unknown place'}</Typography>
+                <Typography variant="h6">{friendly ?? photo.placeLabel ?? 'Unknown place'}</Typography>
                 <Typography variant="body2" sx={{ color: 'text.subtle', mb: 1 }}>
                   {fmtDateTime(new Date(photo.takenAt))}
                 </Typography>
@@ -197,6 +204,9 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
                 <DrawerSection title="Place">
                   {photo.latitude != null ? (
                     <>
+                      {friendly && photo.placeLabel && (
+                        <Typography variant="body2">{friendly} · {photo.placeLabel}</Typography>
+                      )}
                       <Typography variant="body2">{formatCoords(photo.latitude, photo.longitude)}</Typography>
                       <Typography variant="caption" sx={{ color: 'text.subtle' }}>
                         {geotagLabel(photo.geotagSource)}
@@ -213,6 +223,18 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
                     </>
                   ) : (
                     <Typography variant="body2" sx={{ color: 'text.subtle' }}>{PHOTO_TEXT.noLocation}</Typography>
+                  )}
+                  {photo.gpsRejection && (
+                    <Typography variant="caption" sx={{ display: 'block', color: 'warning.main' }}>
+                      {gpsRejectionLabel(photo.gpsRejection.reason)}
+                    </Typography>
+                  )}
+                  {!photo.trashedAt && (
+                    <Box>
+                      <Button size="small" onClick={() => setLocating(true)}>
+                        {photo.latitude != null ? 'Change…' : 'Set location…'}
+                      </Button>
+                    </Box>
                   )}
                 </DrawerSection>
 
@@ -247,6 +269,8 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
           </Box>
         )}
       </Box>
+
+      {locating && photo && <SetLocationDialog photos={[photo]} onClose={() => setLocating(false)} />}
 
       <Dialog open={confirming} onClose={() => setConfirming(false)}>
         <DialogTitle>Delete this photo for good?</DialogTitle>
