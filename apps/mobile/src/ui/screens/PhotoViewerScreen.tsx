@@ -28,7 +28,7 @@ import { LinkEventSheet } from '../photos/LinkEventSheet';
 import { originalCacheKey, thumbCacheKey } from '../photos/imageCache';
 import { PhotoEventLinks } from '../photos/PhotoEventLinks';
 import { SetLocationSheet } from '../photos/SetLocationSheet';
-import { useColors } from '../theme';
+import { useColors, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 import { ICONS } from '../icons';
 import { openSibling } from '../openSibling';
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   page: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
   fill: { width: '100%', height: '100%' },
   meta: { maxHeight: '40%', borderTopWidth: StyleSheet.hairlineWidth },
-  metaContent: { padding: 16, paddingTop: 8, gap: 2 },
+  metaContent: { padding: spacing.lg, paddingTop: spacing.sm, gap: 2 },
   actions: { flexDirection: 'row', justifyContent: 'space-around', borderTopWidth: StyleSheet.hairlineWidth },
   title: { fontSize: 16, fontWeight: '600' },
   detail: { fontSize: 13 },
