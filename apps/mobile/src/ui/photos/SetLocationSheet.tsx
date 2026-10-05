@@ -195,7 +195,7 @@ const noop = () => {};
 
 const styles = StyleSheet.create({
   label: { fontSize: 12, marginTop: 8, marginBottom: 4 },
-  search: { flex: 0, marginTop: 12 },
+  search: { marginTop: 12 },
   muted: { fontSize: 13, marginVertical: 8 },
   footer: { gap: 6, paddingTop: 8 },
   preview: { fontSize: 14 },

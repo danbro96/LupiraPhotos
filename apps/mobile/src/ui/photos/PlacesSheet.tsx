@@ -6,7 +6,8 @@ import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import { PLACE_BROWSE_LIMIT } from '../../domain/geoPlaces';
 import { useDebouncedValue } from '../../state/useDebouncedValue';
 import { usePhotoPlaces } from '../../state/usePhotoLibrary';
-import { Input } from '../components/Input';
+import { TextField } from '@danbro96/lupira-expo-paper/components/TextField';
+import { fieldGap } from '@danbro96/lupira-expo-paper/theme/styles';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
@@ -21,7 +22,7 @@ export function PlacesSheet({ onPick, onDismiss }: { onPick: (label: string) => 
 
   return (
     <Sheet anchor="top" onDismiss={onDismiss}>
-          <Input label="Search places" autoFocus value={q} onChangeText={setQ} returnKeyType="search" />
+          <TextField style={fieldGap} label="Search places" autoFocus value={q} onChangeText={setQ} returnKeyType="search" />
           <ScrollView keyboardShouldPersistTaps="handled">
             {term.length === 0 && (
               <Text style={[styles.hint, { color: c.textMuted }]}>

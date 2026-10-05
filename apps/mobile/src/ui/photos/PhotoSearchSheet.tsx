@@ -7,7 +7,8 @@ import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
 import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import { useEventSearch } from '../../state/usePhotoEventLinks';
 import { usePlaceSuggestions } from '../../state/usePhotoLibrary';
-import { Input } from '../components/Input';
+import { TextField } from '@danbro96/lupira-expo-paper/components/TextField';
+import { fieldGap } from '@danbro96/lupira-expo-paper/theme/styles';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
@@ -34,7 +35,8 @@ export function PhotoSearchSheet({ timeline, onDate, onEvent, onPlace, onDismiss
 
   return (
     <Sheet anchor="top" onDismiss={onDismiss}>
-          <Input
+          <TextField
+            style={fieldGap}
             label="Event, place or month"
             autoFocus
             value={q}
