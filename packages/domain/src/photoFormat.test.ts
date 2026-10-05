@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { daysLeft, fmtBytes, fmtDays, fmtDimensions, fmtDuration, groupByDay, linkedEventIds, originalIsViewable, outcomeMessage, photoEventLinks, topPlaces, unlinkedPhotoIds } from './photoFormat';
+import { daysLeft, fmtBytes, fmtDays, fmtDimensions, fmtDuration, geotagLabel, gpsRejectionLabel, groupByDay, linkedEventIds, originalIsViewable, outcomeMessage, photoEventLinks, topPlaces, topPlacesBy, unlinkedPhotoIds } from './photoFormat';
 
 describe('fmtBytes', () => {
   it('scales through the binary units', () => {
@@ -92,6 +92,48 @@ describe('topPlaces', () => {
     const items = [{ placeLabel: 'Visby' }, { placeLabel: 'Fårö' }, { placeLabel: 'Fårö' }, { placeLabel: null }, { placeLabel: 'Slite' }];
     expect(topPlaces(items, 2)).toEqual(['Fårö', 'Visby']);
     expect(topPlaces([], 2)).toEqual([]);
+  });
+});
+
+describe('topPlacesBy', () => {
+  it('ranks by the derived label and skips the unlabelled', () => {
+    const items = [{ n: 'Visby' }, { n: 'Fårö' }, { n: 'Fårö' }, { n: null }, { n: undefined }, { n: '' }, { n: 'Slite' }];
+    expect(topPlacesBy(items, (i) => i.n, 2)).toEqual(['Fårö', 'Visby']);
+    expect(topPlacesBy([], () => 'x', 2)).toEqual([]);
+  });
+
+  it('can merge raw labels into friendlier names', () => {
+    const items = [{ p: 'Storgatan 1' }, { p: 'Storgatan 1' }, { p: 'Kyrkvägen' }];
+    expect(topPlacesBy(items, (i) => (i.p === 'Storgatan 1' ? 'Home' : i.p), 1)).toEqual(['Home']);
+  });
+});
+
+describe('geotagLabel', () => {
+  it('describes every source', () => {
+    expect(geotagLabel('ExifGps')).toBe("From the photo's GPS");
+    expect(geotagLabel('LocationHistory')).toBe('Matched from your location history');
+    expect(geotagLabel('Manual')).toBe('Set by you');
+    expect(geotagLabel('Folder')).toBe('From the import folder');
+    expect(geotagLabel('None')).toBe('No location');
+  });
+
+  it('falls back neutrally for an unknown or missing source', () => {
+    expect(geotagLabel('Satellite')).toBe('Unknown location source');
+    expect(geotagLabel('toString')).toBe('Unknown location source');
+    expect(geotagLabel(null)).toBe('Unknown location source');
+    expect(geotagLabel(undefined)).toBe('Unknown location source');
+  });
+});
+
+describe('gpsRejectionLabel', () => {
+  it('describes every reason', () => {
+    expect(gpsRejectionLabel('Spike')).toBe('GPS fix rejected as a speed spike');
+    expect(gpsRejectionLabel('Repeat')).toBe('GPS fix rejected as repeated across days');
+  });
+
+  it('falls back for an unknown reason', () => {
+    expect(gpsRejectionLabel('Drift')).toBe('GPS fix rejected');
+    expect(gpsRejectionLabel(null)).toBe('GPS fix rejected');
   });
 });
 

@@ -75,13 +75,19 @@ export function photoEventLinks(
 /** Presigned thumbnail URLs live 24 h; a list cached longer than this starts serving dead ones. */
 export const THUMB_SAFE_STALE_MS = 15 * 60_000;
 
-/** A day's most photographed places, most first — ties keep first-seen order. */
-export function topPlaces(items: readonly { placeLabel?: string | null }[], max: number): string[] {
+/** The most frequent labels, most first — ties keep first-seen order, unlabelled items are skipped. */
+export function topPlacesBy<T>(items: readonly T[], labelOf: (item: T) => string | null | undefined, max: number): string[] {
   const counts = new Map<string, number>();
-  for (const { placeLabel } of items) {
-    if (placeLabel) counts.set(placeLabel, (counts.get(placeLabel) ?? 0) + 1);
+  for (const item of items) {
+    const label = labelOf(item);
+    if (label) counts.set(label, (counts.get(label) ?? 0) + 1);
   }
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, max).map(([label]) => label);
+}
+
+/** A day's most photographed places, most first — ties keep first-seen order. */
+export function topPlaces(items: readonly { placeLabel?: string | null }[], max: number): string[] {
+  return topPlacesBy(items, (item) => item.placeLabel, max);
 }
 
 /** Distinct event ids linked to any of the photos, in first-seen order. */
@@ -114,8 +120,25 @@ export function originalIsViewable(contentType: string | null | undefined): bool
   return contentType !== 'image/heic' && contentType !== 'image/heif';
 }
 
+const GEOTAG_LABELS = new Map([
+  ['ExifGps', "From the photo's GPS"],
+  ['LocationHistory', 'Matched from your location history'],
+  ['Manual', 'Set by you'],
+  ['Folder', 'From the import folder'],
+  ['None', 'No location'],
+]);
+
 export function geotagLabel(source: string | null | undefined): string {
-  return source === 'ExifGps' ? 'From the camera' : 'Matched from your location history';
+  return GEOTAG_LABELS.get(source ?? '') ?? 'Unknown location source';
+}
+
+const GPS_REJECTION_LABELS = new Map([
+  ['Spike', 'GPS fix rejected as a speed spike'],
+  ['Repeat', 'GPS fix rejected as repeated across days'],
+]);
+
+export function gpsRejectionLabel(reason: string | null | undefined): string {
+  return GPS_REJECTION_LABELS.get(reason ?? '') ?? 'GPS fix rejected';
 }
 
 /** The photos not yet linked to the event — the ones a link call sends, and an Undo unlinks. */
