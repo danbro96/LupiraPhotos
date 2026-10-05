@@ -1,6 +1,7 @@
 import { onlineManager } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LocationState } from '@lupira/photos-domain/photoLocation';
+import { ApiError } from '@danbro96/lupira-http/apiError';
 
 vi.mock('@lupira/photos-api/fetch/photo', () => ({
   clearPhotoLocation: vi.fn(),
@@ -25,8 +26,8 @@ const target = { latitude: 60.1, longitude: 13.2, label: 'Cabin' };
 const photos = (n: number, extra: Partial<LocationState> = {}): LocationState[] =>
   Array.from({ length: n }, (_, i) => ({ id: `p${i}`, geotagSource: 'None', ...extra }));
 
-const ok = (ids: string[]) => ({ status: 200, data: { count: ids.length, ids } }) as never;
-const status = (code: number) => ({ status: code, data: {} }) as never;
+const ok = (ids: string[]) => ({ count: ids.length, ids }) as never;
+const failure = (code: number) => new ApiError(code, `HTTP ${code}`);
 const echo = () => relocateMock.mockImplementation((req) => Promise.resolve(ok(req.ids ?? [])));
 const undoOf = () => (vi.mocked(toast).mock.calls[0]![1]!.action!.onPress);
 
@@ -59,7 +60,7 @@ describe('relocate', () => {
   });
 
   it('skips a chunk answered 409 and keeps the ids of the others', async () => {
-    relocateMock.mockResolvedValueOnce(ok(Array.from({ length: 2000 }, (_, i) => `p${i}`))).mockResolvedValueOnce(status(409));
+    relocateMock.mockResolvedValueOnce(ok(Array.from({ length: 2000 }, (_, i) => `p${i}`))).mockRejectedValueOnce(failure(409));
     await relocate(photos(2001), target);
     expect(relocateMock).toHaveBeenCalledTimes(2);
     expect(toast).toHaveBeenCalledWith('Set location on 2000 of 2001 photos', expect.anything());
@@ -126,7 +127,7 @@ describe('relocate', () => {
 
     it('reports photos it could not restore', async () => {
       relocateMock.mockResolvedValueOnce(ok(['a', 'd']));
-      clearMock.mockResolvedValueOnce(ok([])).mockResolvedValueOnce(status(500));
+      clearMock.mockResolvedValueOnce(ok([])).mockRejectedValueOnce(failure(500));
       await relocate(previous, target);
 
       undoOf()();

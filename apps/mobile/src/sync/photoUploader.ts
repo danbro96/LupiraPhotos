@@ -116,7 +116,7 @@ async function drainOnce(dbOverride?: Db): Promise<void> {
 async function uploadOne(db: Db, device: string, row: PhotoQueueRow): Promise<void> {
   const status = usePhotoBackupStatus.getState();
   try {
-    const declared = await declarePhoto({
+    const { assetId, uploadUrl, requiredHeaders } = await declarePhoto({
       deviceId: device,
       mediaStoreId: row.media_store_id,
       contentType: row.content_type,
@@ -128,8 +128,6 @@ async function uploadOne(db: Db, device: string, row: PhotoQueueRow): Promise<vo
       height: row.height ?? undefined,
       durationSeconds: row.duration_seconds ?? undefined,
     });
-    if (declared.status !== 200) throw new Error(`declare failed (${declared.status})`);
-    const { assetId, uploadUrl, requiredHeaders } = declared.data;
 
     // No uploadUrl = the server already has the bytes (a previous run's PUT landed but complete
     // never ran, or this is a re-declare of finished work). Skip straight to completing.
@@ -141,8 +139,7 @@ async function uploadOne(db: Db, device: string, row: PhotoQueueRow): Promise<vo
       if (httpStatus < 200 || httpStatus >= 300) throw new Error(`upload failed (${httpStatus})`);
     }
 
-    const completed = await completePhotoUpload(assetId);
-    if (completed.status !== 200) throw new Error(`complete failed (${completed.status})`);
+    await completePhotoUpload(assetId);
 
     await db.exclusive((tx) => queue.markDone(tx, row.media_store_id, assetId));
     logDebug('photos', `backed up ${row.media_store_id}`);

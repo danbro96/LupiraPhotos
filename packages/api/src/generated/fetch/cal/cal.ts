@@ -10,46 +10,11 @@ import type {
   CreateRelationsBatchRequest,
   DeleteRelationsBatchRequest,
   ListRelationEdgesParams,
-  ProblemDetails,
   RelationDto,
   SearchItemsParams
 } from '../../models';
 
 import { apiRequest } from '../../../transport';
-
-export type searchItemsResponse200 = {
-  data: CalendarItemOccurrenceDto[]
-  status: 200
-}
-
-export type searchItemsResponse400 = {
-  data: ProblemDetails
-  status: 400
-}
-
-export type searchItemsResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type searchItemsResponse403 = {
-  data: ProblemDetails
-  status: 403
-}
-
-export type searchItemsResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type searchItemsResponseSuccess = (searchItemsResponse200) & {
-  headers: Headers;
-};
-export type searchItemsResponseError = (searchItemsResponse400 | searchItemsResponse401 | searchItemsResponse403 | searchItemsResponse500) & {
-  headers: Headers;
-};
-
-export type searchItemsResponse = (searchItemsResponseSuccess | searchItemsResponseError)
 
 export const getSearchItemsUrl = (params?: SearchItemsParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -69,9 +34,9 @@ export const getSearchItemsUrl = (params?: SearchItemsParams,) => {
 /**
  * @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read.
  */
-export const searchItems = async (params?: SearchItemsParams, options?: Parameters<typeof apiRequest>[1]): Promise<searchItemsResponse> => {
+export const searchItems = async (params?: SearchItemsParams, options?: Parameters<typeof apiRequest>[1]): Promise<CalendarItemOccurrenceDto[]> => {
 
-  return apiRequest<searchItemsResponse>(getSearchItemsUrl(params),
+  return apiRequest<CalendarItemOccurrenceDto[]>(getSearchItemsUrl(params),
   {
     ...options,
     method: 'GET'
@@ -80,35 +45,6 @@ export const searchItems = async (params?: SearchItemsParams, options?: Paramete
   }
 );}
 
-
-export type getItemResponse200 = {
-  data: CalendarItemDto
-  status: 200
-}
-
-export type getItemResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type getItemResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type getItemResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type getItemResponseSuccess = (getItemResponse200) & {
-  headers: Headers;
-};
-export type getItemResponseError = (getItemResponse401 | getItemResponse404 | getItemResponse500) & {
-  headers: Headers;
-};
-
-export type getItemResponse = (getItemResponseSuccess | getItemResponseError)
 
 export const getGetItemUrl = (id: string,) => {
 
@@ -121,9 +57,9 @@ export const getGetItemUrl = (id: string,) => {
 /**
  * @summary Get a single calendar item.
  */
-export const getItem = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<getItemResponse> => {
+export const getItem = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<CalendarItemDto> => {
 
-  return apiRequest<getItemResponse>(getGetItemUrl(id),
+  return apiRequest<CalendarItemDto>(getGetItemUrl(id),
   {
     ...options,
     method: 'GET'
@@ -132,35 +68,6 @@ export const getItem = async (id: string, options?: Parameters<typeof apiRequest
   }
 );}
 
-
-export type createItemRelationsBatchResponse200 = {
-  data: RelationDto[]
-  status: 200
-}
-
-export type createItemRelationsBatchResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type createItemRelationsBatchResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type createItemRelationsBatchResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type createItemRelationsBatchResponseSuccess = (createItemRelationsBatchResponse200) & {
-  headers: Headers;
-};
-export type createItemRelationsBatchResponseError = (createItemRelationsBatchResponse401 | createItemRelationsBatchResponse404 | createItemRelationsBatchResponse500) & {
-  headers: Headers;
-};
-
-export type createItemRelationsBatchResponse = (createItemRelationsBatchResponseSuccess | createItemRelationsBatchResponseError)
 
 export const getCreateItemRelationsBatchUrl = (id: string,) => {
 
@@ -174,7 +81,7 @@ export const getCreateItemRelationsBatchUrl = (id: string,) => {
  * @summary Link many references of one kind to an item at once (idempotent per reference) — e.g. an album's photos to its event.
  */
 export const createItemRelationsBatch = async (id: string,
-    createRelationsBatchRequest: CreateRelationsBatchRequest, options?: Parameters<typeof apiRequest>[1]): Promise<createItemRelationsBatchResponse> => {
+    createRelationsBatchRequest: CreateRelationsBatchRequest, options?: Parameters<typeof apiRequest>[1]): Promise<RelationDto[]> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -190,7 +97,7 @@ export const createItemRelationsBatch = async (id: string,
     }
     return headers;
   };
-return apiRequest<createItemRelationsBatchResponse>(getCreateItemRelationsBatchUrl(id),
+return apiRequest<RelationDto[]>(getCreateItemRelationsBatchUrl(id),
   {
     ...options,
     method: 'POST',
@@ -199,45 +106,6 @@ return apiRequest<createItemRelationsBatchResponse>(getCreateItemRelationsBatchU
   }
 );}
 
-
-export type deleteItemRelationsBatchResponse204 = {
-  data: void
-  status: 204
-}
-
-export type deleteItemRelationsBatchResponse400 = {
-  data: ProblemDetails
-  status: 400
-}
-
-export type deleteItemRelationsBatchResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type deleteItemRelationsBatchResponse403 = {
-  data: ProblemDetails
-  status: 403
-}
-
-export type deleteItemRelationsBatchResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type deleteItemRelationsBatchResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type deleteItemRelationsBatchResponseSuccess = (deleteItemRelationsBatchResponse204) & {
-  headers: Headers;
-};
-export type deleteItemRelationsBatchResponseError = (deleteItemRelationsBatchResponse400 | deleteItemRelationsBatchResponse401 | deleteItemRelationsBatchResponse403 | deleteItemRelationsBatchResponse404 | deleteItemRelationsBatchResponse500) & {
-  headers: Headers;
-};
-
-export type deleteItemRelationsBatchResponse = (deleteItemRelationsBatchResponseSuccess | deleteItemRelationsBatchResponseError)
 
 export const getDeleteItemRelationsBatchUrl = (id: string,) => {
 
@@ -251,7 +119,7 @@ export const getDeleteItemRelationsBatchUrl = (id: string,) => {
  * @summary Unlink many references of one kind from an item at once (idempotent: references with no matching edge are ignored).
  */
 export const deleteItemRelationsBatch = async (id: string,
-    deleteRelationsBatchRequest: DeleteRelationsBatchRequest, options?: Parameters<typeof apiRequest>[1]): Promise<deleteItemRelationsBatchResponse> => {
+    deleteRelationsBatchRequest: DeleteRelationsBatchRequest, options?: Parameters<typeof apiRequest>[1]): Promise<void> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -267,7 +135,7 @@ export const deleteItemRelationsBatch = async (id: string,
     }
     return headers;
   };
-return apiRequest<deleteItemRelationsBatchResponse>(getDeleteItemRelationsBatchUrl(id),
+return apiRequest<void>(getDeleteItemRelationsBatchUrl(id),
   {
     ...options,
     method: 'POST',
@@ -276,30 +144,6 @@ return apiRequest<deleteItemRelationsBatchResponse>(getDeleteItemRelationsBatchU
   }
 );}
 
-
-export type listRelationEdgesResponse200 = {
-  data: RelationDto[]
-  status: 200
-}
-
-export type listRelationEdgesResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type listRelationEdgesResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type listRelationEdgesResponseSuccess = (listRelationEdgesResponse200) & {
-  headers: Headers;
-};
-export type listRelationEdgesResponseError = (listRelationEdgesResponse401 | listRelationEdgesResponse500) & {
-  headers: Headers;
-};
-
-export type listRelationEdgesResponse = (listRelationEdgesResponseSuccess | listRelationEdgesResponseError)
 
 export const getListRelationEdgesUrl = (params: ListRelationEdgesParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -319,9 +163,9 @@ export const getListRelationEdgesUrl = (params: ListRelationEdgesParams,) => {
 /**
  * @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links.
  */
-export const listRelationEdges = async (params: ListRelationEdgesParams, options?: Parameters<typeof apiRequest>[1]): Promise<listRelationEdgesResponse> => {
+export const listRelationEdges = async (params: ListRelationEdgesParams, options?: Parameters<typeof apiRequest>[1]): Promise<RelationDto[]> => {
 
-  return apiRequest<listRelationEdgesResponse>(getListRelationEdgesUrl(params),
+  return apiRequest<RelationDto[]>(getListRelationEdgesUrl(params),
   {
     ...options,
     method: 'GET'

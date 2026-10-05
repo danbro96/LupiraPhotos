@@ -11,41 +11,11 @@ import type {
   PlaceDto,
   PlaceLookupItemDto,
   PlaceSuggestionDto,
-  ProblemDetails,
   SavedPlaceDto,
   SuggestPlacesParams
 } from '../../models';
 
 import { apiRequest } from '../../../transport';
-
-export type suggestPlacesResponse200 = {
-  data: PlaceSuggestionDto[]
-  status: 200
-}
-
-export type suggestPlacesResponse400 = {
-  data: ProblemDetails
-  status: 400
-}
-
-export type suggestPlacesResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type suggestPlacesResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type suggestPlacesResponseSuccess = (suggestPlacesResponse200) & {
-  headers: Headers;
-};
-export type suggestPlacesResponseError = (suggestPlacesResponse400 | suggestPlacesResponse401 | suggestPlacesResponse500) & {
-  headers: Headers;
-};
-
-export type suggestPlacesResponse = (suggestPlacesResponseSuccess | suggestPlacesResponseError)
 
 export const getSuggestPlacesUrl = (params: SuggestPlacesParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -65,9 +35,9 @@ export const getSuggestPlacesUrl = (params: SuggestPlacesParams,) => {
 /**
  * @summary Typeahead: trigram-ranked suggestions over places (names + aliases) and AdminArea localities, discriminated by type.
  */
-export const suggestPlaces = async (params: SuggestPlacesParams, options?: Parameters<typeof apiRequest>[1]): Promise<suggestPlacesResponse> => {
+export const suggestPlaces = async (params: SuggestPlacesParams, options?: Parameters<typeof apiRequest>[1]): Promise<PlaceSuggestionDto[]> => {
 
-  return apiRequest<suggestPlacesResponse>(getSuggestPlacesUrl(params),
+  return apiRequest<PlaceSuggestionDto[]>(getSuggestPlacesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -76,35 +46,6 @@ export const suggestPlaces = async (params: SuggestPlacesParams, options?: Param
   }
 );}
 
-
-export type getPlaceResponse200 = {
-  data: PlaceDto
-  status: 200
-}
-
-export type getPlaceResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type getPlaceResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type getPlaceResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type getPlaceResponseSuccess = (getPlaceResponse200) & {
-  headers: Headers;
-};
-export type getPlaceResponseError = (getPlaceResponse401 | getPlaceResponse404 | getPlaceResponse500) & {
-  headers: Headers;
-};
-
-export type getPlaceResponse = (getPlaceResponseSuccess | getPlaceResponseError)
 
 export const getGetPlaceUrl = (id: string,) => {
 
@@ -117,9 +58,9 @@ export const getGetPlaceUrl = (id: string,) => {
 /**
  * @summary A single place with its aliases, external ids, and containment chain (outermost→innermost). Follows merge redirects.
  */
-export const getPlace = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<getPlaceResponse> => {
+export const getPlace = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PlaceDto> => {
 
-  return apiRequest<getPlaceResponse>(getGetPlaceUrl(id),
+  return apiRequest<PlaceDto>(getGetPlaceUrl(id),
   {
     ...options,
     method: 'GET'
@@ -128,35 +69,6 @@ export const getPlace = async (id: string, options?: Parameters<typeof apiReques
   }
 );}
 
-
-export type lookupPlacesResponse200 = {
-  data: PlaceLookupItemDto[]
-  status: 200
-}
-
-export type lookupPlacesResponse400 = {
-  data: ProblemDetails
-  status: 400
-}
-
-export type lookupPlacesResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type lookupPlacesResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type lookupPlacesResponseSuccess = (lookupPlacesResponse200) & {
-  headers: Headers;
-};
-export type lookupPlacesResponseError = (lookupPlacesResponse400 | lookupPlacesResponse401 | lookupPlacesResponse500) & {
-  headers: Headers;
-};
-
-export type lookupPlacesResponse = (lookupPlacesResponseSuccess | lookupPlacesResponseError)
 
 export const getLookupPlacesUrl = () => {
 
@@ -169,7 +81,7 @@ export const getLookupPlacesUrl = () => {
 /**
  * @summary Bulk get-by-ids (max 200) — hydrate stored place ids into coordinates in one call. Responses align index-for-index; a null place means unknown or deleted, a merged id returns the survivor. Containment is omitted (use GET /places/{id} for detail).
  */
-export const lookupPlaces = async (lookupPlacesRequest: LookupPlacesRequest, options?: Parameters<typeof apiRequest>[1]): Promise<lookupPlacesResponse> => {
+export const lookupPlaces = async (lookupPlacesRequest: LookupPlacesRequest, options?: Parameters<typeof apiRequest>[1]): Promise<PlaceLookupItemDto[]> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -185,7 +97,7 @@ export const lookupPlaces = async (lookupPlacesRequest: LookupPlacesRequest, opt
     }
     return headers;
   };
-return apiRequest<lookupPlacesResponse>(getLookupPlacesUrl(),
+return apiRequest<PlaceLookupItemDto[]>(getLookupPlacesUrl(),
   {
     ...options,
     method: 'POST',
@@ -194,30 +106,6 @@ return apiRequest<lookupPlacesResponse>(getLookupPlacesUrl(),
   }
 );}
 
-
-export type forwardGeocodeResponse200 = {
-  data: GeocodeResultDto[]
-  status: 200
-}
-
-export type forwardGeocodeResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type forwardGeocodeResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type forwardGeocodeResponseSuccess = (forwardGeocodeResponse200) & {
-  headers: Headers;
-};
-export type forwardGeocodeResponseError = (forwardGeocodeResponse401 | forwardGeocodeResponse500) & {
-  headers: Headers;
-};
-
-export type forwardGeocodeResponse = (forwardGeocodeResponseSuccess | forwardGeocodeResponseError)
 
 export const getForwardGeocodeUrl = (params: ForwardGeocodeParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -237,9 +125,9 @@ export const getForwardGeocodeUrl = (params: ForwardGeocodeParams,) => {
 /**
  * @summary Text → candidate coordinates + structured address (cached).
  */
-export const forwardGeocode = async (params: ForwardGeocodeParams, options?: Parameters<typeof apiRequest>[1]): Promise<forwardGeocodeResponse> => {
+export const forwardGeocode = async (params: ForwardGeocodeParams, options?: Parameters<typeof apiRequest>[1]): Promise<GeocodeResultDto[]> => {
 
-  return apiRequest<forwardGeocodeResponse>(getForwardGeocodeUrl(params),
+  return apiRequest<GeocodeResultDto[]>(getForwardGeocodeUrl(params),
   {
     ...options,
     method: 'GET'
@@ -248,30 +136,6 @@ export const forwardGeocode = async (params: ForwardGeocodeParams, options?: Par
   }
 );}
 
-
-export type listSavedPlacesResponse200 = {
-  data: SavedPlaceDto[]
-  status: 200
-}
-
-export type listSavedPlacesResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type listSavedPlacesResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type listSavedPlacesResponseSuccess = (listSavedPlacesResponse200) & {
-  headers: Headers;
-};
-export type listSavedPlacesResponseError = (listSavedPlacesResponse401 | listSavedPlacesResponse500) & {
-  headers: Headers;
-};
-
-export type listSavedPlacesResponse = (listSavedPlacesResponseSuccess | listSavedPlacesResponseError)
 
 export const getListSavedPlacesUrl = () => {
 
@@ -284,9 +148,9 @@ export const getListSavedPlacesUrl = () => {
 /**
  * @summary The caller's saved places / personal labels (favorites first).
  */
-export const listSavedPlaces = async ( options?: Parameters<typeof apiRequest>[1]): Promise<listSavedPlacesResponse> => {
+export const listSavedPlaces = async ( options?: Parameters<typeof apiRequest>[1]): Promise<SavedPlaceDto[]> => {
 
-  return apiRequest<listSavedPlacesResponse>(getListSavedPlacesUrl(),
+  return apiRequest<SavedPlaceDto[]>(getListSavedPlacesUrl(),
   {
     ...options,
     method: 'GET'

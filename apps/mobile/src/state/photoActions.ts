@@ -7,25 +7,26 @@ import { invalidatePhotos } from './queryClient';
 
 export type Outcome = { done: number; failed: number };
 
+const succeeds = (call: Promise<unknown>): Promise<boolean> => call.then(() => true, () => false);
+
 /** One call per photo — the photo API has no batch form — and one gallery refresh when all settle. */
-async function each(ids: readonly string[], call: (id: string) => Promise<{ status: number }>, okStatus: number): Promise<Outcome> {
+async function each(ids: readonly string[], call: (id: string) => Promise<unknown>): Promise<Outcome> {
   let failed = 0;
   for (const id of ids) {
-    const r = await call(id).catch(() => null);
-    if (r?.status !== okStatus) failed++;
+    if (!(await succeeds(call(id)))) failed++;
   }
   invalidatePhotos();
   return { done: ids.length - failed, failed };
 }
 
-export const trashPhotos = (ids: readonly string[]) => each(ids, trashPhoto, 200);
-export const restorePhotos = (ids: readonly string[]) => each(ids, restorePhoto, 200);
-export const purgePhotos = (ids: readonly string[]) => each(ids, deletePhoto, 204);
+export const trashPhotos = (ids: readonly string[]) => each(ids, trashPhoto);
+export const restorePhotos = (ids: readonly string[]) => each(ids, restorePhoto);
+export const purgePhotos = (ids: readonly string[]) => each(ids, deletePhoto);
 
 export async function emptyTrash(): Promise<boolean> {
-  const r = await emptyPhotoTrash().catch(() => null);
+  const ok = await succeeds(emptyPhotoTrash());
   invalidatePhotos();
-  return r?.status === 204;
+  return ok;
 }
 
 const CLEAR_CONCURRENCY = 6;
@@ -45,7 +46,7 @@ async function sendRelocate(ids: readonly string[], target: RelocateTarget): Pro
   for (const group of chunk(ids, RELOCATE_MAX_IDS)) {
     const r = await relocatePhotos({ ids: group, latitude: target.latitude, longitude: target.longitude, label: target.label })
       .catch(() => null);
-    if (r?.status === 200) applied.push(...r.data.ids);
+    if (r) applied.push(...r.ids);
   }
   return applied;
 }
@@ -54,8 +55,7 @@ async function sendRelocate(ids: readonly string[], target: RelocateTarget): Pro
 async function sendClear(ids: readonly string[]): Promise<Outcome> {
   let failed = 0;
   await pooled(ids, CLEAR_CONCURRENCY, async (id) => {
-    const r = await clearPhotoLocation(id).catch(() => null);
-    if (r?.status !== 200) failed++;
+    if (!(await succeeds(clearPhotoLocation(id)))) failed++;
   });
   return { done: ids.length - failed, failed };
 }

@@ -21,7 +21,7 @@ import {
   isGeoDenied, useAddressSearch, useEventPlace, useGeoSuggestions, useSavedPlaces, useSavedTargets,
 } from '../../state/useGeoPlaces';
 import { useLinkCandidates } from '../../state/usePhotoEventLinks';
-import { useOnline } from '../../state/useOnline';
+import { useOnline } from '@danbro96/lupira-expo-query/online';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 import { GeoBanner } from './GeoBanner';

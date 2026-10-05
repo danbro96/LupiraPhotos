@@ -79,3 +79,8 @@ export async function listParkedUploads(tx: Tx): Promise<PhotoQueueRow[]> {
 export async function clearUnfinishedUploads(tx: Tx): Promise<void> {
   await tx.run(`DELETE FROM photo_upload_queue WHERE state != 'done'`);
 }
+
+/** A new account starts with an empty queue; done rows of the previous account would otherwise hide assets from it. */
+export async function wipeUploadQueue(tx: Tx): Promise<void> {
+  await tx.run('DELETE FROM photo_upload_queue');
+}

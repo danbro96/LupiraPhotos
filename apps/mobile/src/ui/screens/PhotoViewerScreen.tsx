@@ -118,9 +118,9 @@ export function PhotoViewerScreen() {
   const onReprocess = async () => {
     setMenuOpen(false);
     setBusy(true);
-    const r = await reprocessPhoto(currentId).catch(() => null);
+    const queued = await reprocessPhoto(currentId).then(() => true, () => false);
     setBusy(false);
-    if (r?.status === 200) {
+    if (queued) {
       toast('Queued for reprocessing');
       invalidatePhotos();
     } else {

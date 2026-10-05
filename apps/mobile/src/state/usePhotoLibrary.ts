@@ -8,11 +8,10 @@ import { PHOTO_SEARCH } from '@lupira/photos-domain/photoTimeline';
 import { nearBbox, PLACE_BROWSE_LIMIT } from '../domain/geoPlaces';
 import { useSavedPlaces } from './useGeoPlaces';
 import { useEventPhotoQuery } from './usePhotoEventLinks';
-import { useOnline } from './useOnline';
+import { onlineQuery, retryTransient } from '@danbro96/lupira-expo-query/onlineQuery';
+import { useOnline } from '@danbro96/lupira-expo-query/online';
 
-/** The gallery's read model. Every hook gates on connectivity, and keys live under one ['photos'] root
- *  that a write invalidates whole; the list, detail, stats and places keys are what the query cache
- *  persists for offline viewing (state/queryClient). */
+/** The gallery's read model, under the ['photos'] root the query cache persists for offline viewing (state/queryClient). */
 
 export const PHOTO_PAGE_SIZE = 90;
 
@@ -54,14 +53,11 @@ export function usePhotoLibrary(filters: PhotoQueryFilters) {
 
   const query = useInfiniteQuery({
     queryKey: ['photos', 'list', filters],
-    enabled: online && !filters.event && (!filters.near || bbox !== null),
+    enabled: !filters.event && (!filters.near || bbox !== null),
     staleTime: THUMB_SAFE_STALE_MS,
+    retry: retryTransient,
     initialPageParam: undefined as string | undefined,
-    queryFn: async ({ pageParam }) => {
-      const r = await listPhotos({ ...listParams(filters, bbox), limit: PHOTO_PAGE_SIZE, cursor: pageParam });
-      if (r.status !== 200) throw new Error(`photos ${r.status}`);
-      return r.data;
-    },
+    queryFn: ({ pageParam }) => listPhotos({ ...listParams(filters, bbox), limit: PHOTO_PAGE_SIZE, cursor: pageParam }),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 
@@ -100,32 +96,12 @@ export function usePhotoLibrary(filters: PhotoQueryFilters) {
 }
 
 export function usePhoto(photoId: string) {
-  const online = useOnline();
-  return useQuery({
-    queryKey: ['photos', 'detail', photoId],
-    enabled: online,
-    staleTime: THUMB_SAFE_STALE_MS,
-    queryFn: async () => {
-      const r = await getPhoto(photoId);
-      if (r.status !== 200) throw new Error(`photo ${r.status}`);
-      return r.data;
-    },
-  });
+  return useQuery({ ...onlineQuery(['photos', 'detail', photoId], () => getPhoto(photoId)), staleTime: THUMB_SAFE_STALE_MS });
 }
 
 /** Library totals — powers the upload-health chip without paging the whole library to count. */
 export function usePhotoStats() {
-  const online = useOnline();
-  return useQuery({
-    queryKey: ['photos', 'stats'],
-    enabled: online,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const r = await getPhotoStats();
-      if (r.status !== 200) throw new Error(`photo stats ${r.status}`);
-      return r.data;
-    },
-  });
+  return useQuery(onlineQuery(['photos', 'stats'], () => getPhotoStats()));
 }
 
 export type PhotoDay = DayGroup<PhotoListItemDto>;
@@ -136,32 +112,15 @@ export function groupByDay(items: PhotoListItemDto[]): PhotoDay[] {
 
 /** The most photographed places, narrowed by a search — the endpoint returns at most `PLACE_BROWSE_LIMIT`. */
 export function usePhotoPlaces(query: string) {
-  const online = useOnline();
   const term = query.trim();
-  return useQuery({
-    queryKey: ['photos', 'places', 'top', term],
-    enabled: online,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const r = await listPhotoPlaces({ q: term || undefined, limit: PLACE_BROWSE_LIMIT });
-      if (r.status !== 200) throw new Error(`photo places ${r.status}`);
-      return r.data;
-    },
-  });
+  return useQuery(onlineQuery(['photos', 'places', 'top', term], () => listPhotoPlaces({ q: term || undefined, limit: PLACE_BROWSE_LIMIT })));
 }
 
 /** Place names in the library matching a search, most photographed first. */
 export function usePlaceSuggestions(query: string) {
-  const online = useOnline();
   const term = query.trim();
   return useQuery({
-    queryKey: ['photos', 'places', term],
-    enabled: online && term.length >= PHOTO_SEARCH.minQuery,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const r = await listPhotoPlaces({ q: term, limit: PHOTO_SEARCH.places });
-      if (r.status !== 200) throw new Error(`photo places ${r.status}`);
-      return r.data;
-    },
+    ...onlineQuery(['photos', 'places', term], () => listPhotoPlaces({ q: term, limit: PHOTO_SEARCH.places })),
+    enabled: term.length >= PHOTO_SEARCH.minQuery,
   });
 }

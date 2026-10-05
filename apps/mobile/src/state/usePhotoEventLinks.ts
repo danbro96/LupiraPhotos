@@ -5,23 +5,13 @@ import { photoEventLinks, THUMB_SAFE_STALE_MS, unlinkedPhotoIds } from '@lupira/
 import { PHOTO_LINK } from '@danbro96/lupira-domain-photos/photoLinks';
 import { captureWindow, EVENT_CANDIDATE_LIMIT } from '@danbro96/lupira-domain-photos/photoWindow';
 import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
+import { onlineQuery } from '@danbro96/lupira-expo-query/onlineQuery';
 import { PHOTO_SEARCH } from '@lupira/photos-domain/photoTimeline';
 import { invalidatePhotos } from './queryClient';
-import { useOnline } from './useOnline';
 
 /** Every photo↔event edge the caller can see, in one call rather than a request per tile. */
 function usePhotoEventEdges() {
-  const online = useOnline();
-  return useQuery({
-    queryKey: ['photos', 'event-links'],
-    enabled: online,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const r = await listRelationEdges({ toKind: PHOTO_LINK.toKind });
-      if (r.status !== 200) throw new Error(`relation edges ${r.status}`);
-      return r.data;
-    },
-  });
+  return useQuery(onlineQuery(['cal', 'event-links'], () => listRelationEdges({ toKind: PHOTO_LINK.toKind })));
 }
 
 /** photoId → linked calendar item ids. */
@@ -32,19 +22,13 @@ export function usePhotoEventLinks(): Map<string, string[]> {
 
 /** The photos linked to one calendar item, hydrated in a single batch lookup. */
 export function useEventPhotoQuery(itemId: string) {
-  const online = useOnline();
   const edges = usePhotoEventEdges();
   const ids = (edges.data ?? []).filter((e) => e.fromId === itemId).map((e) => e.toRef);
 
   const query = useQuery({
-    queryKey: ['photos', 'lookup', ids],
-    enabled: online && ids.length > 0,
+    ...onlineQuery(['event-photos', ids], async () => (await lookupPhotos({ ids })).items),
+    enabled: ids.length > 0,
     staleTime: THUMB_SAFE_STALE_MS,
-    queryFn: async () => {
-      const r = await lookupPhotos({ ids });
-      if (r.status !== 200) throw new Error(`photo lookup ${r.status}`);
-      return r.data.items;
-    },
   });
 
   return {
@@ -60,37 +44,19 @@ export type LinkedEvent = { id: string; title: string };
 
 /** Titles for a photo's linked events, one cached item read each. */
 export function useLinkedEvents(itemIds: string[]): LinkedEvent[] {
-  const online = useOnline();
-  const results = useQueries({
-    queries: itemIds.map((id) => ({
-      queryKey: ['photos', 'event', id] as const,
-      enabled: online,
-      staleTime: 5 * 60_000,
-      queryFn: async () => {
-        const r = await getItem(id);
-        if (r.status !== 200) throw new Error(`item ${r.status}`);
-        return r.data;
-      },
-    })),
-  });
-
+  const results = useQueries({ queries: itemIds.map((id) => onlineQuery(['cal', 'event', id], () => getItem(id))) });
   return itemIds.map((id, i) => ({ id, title: displayTitle(results[i]?.data?.title) }));
 }
 
 /** Events around the photos' capture times — offered as link candidates, never linked automatically: a
  *  photo taken during a 9-to-5 "work" block is not of it. */
 export function useLinkCandidates(takenAts: readonly string[], enabled: boolean) {
-  const online = useOnline();
   const window = captureWindow(takenAts);
   return useQuery({
-    queryKey: ['photos', 'link-candidates', window?.fromIso, window?.toIso],
-    enabled: enabled && online && window !== null,
+    ...onlineQuery(['cal', 'link-candidates', window?.fromIso, window?.toIso], () =>
+      searchItems({ from: window!.fromIso, to: window!.toIso, take: EVENT_CANDIDATE_LIMIT })),
+    enabled: enabled && window !== null,
     staleTime: 60_000,
-    queryFn: async () => {
-      const r = await searchItems({ from: window!.fromIso, to: window!.toIso, take: EVENT_CANDIDATE_LIMIT });
-      if (r.status !== 200) throw new Error(`item search ${r.status}`);
-      return r.data;
-    },
   });
 }
 
@@ -100,29 +66,23 @@ export async function linkPhotosToEvent(
 ): Promise<{ linked: string[]; ok: boolean }> {
   const pending = unlinkedPhotoIds(photoIds, links, itemId);
   if (pending.length === 0) return { linked: [], ok: true };
-  const r = await createItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: pending }).catch(() => null);
+  const ok = await createItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: pending }).then(() => true, () => false);
   invalidatePhotos();
-  return r?.status === 200 ? { linked: pending, ok: true } : { linked: [], ok: false };
+  return ok ? { linked: pending, ok } : { linked: [], ok };
 }
 
 export async function unlinkPhotosFromEvent(itemId: string, photoIds: readonly string[]): Promise<boolean> {
-  const r = await deleteItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: [...photoIds] }).catch(() => null);
+  const ok = await deleteItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: [...photoIds] }).then(() => true, () => false);
   invalidatePhotos();
-  return r?.status === 204;
+  return ok;
 }
 
 /** Events by name, newest first — a photo search usually means a past event. */
 export function useEventSearch(query: string) {
-  const online = useOnline();
   const term = query.trim();
   return useQuery({
-    queryKey: ['photos', 'event-search', term],
-    enabled: online && term.length >= PHOTO_SEARCH.minQuery,
+    ...onlineQuery(['cal', 'event-search', term], () => searchItems({ query: term, take: PHOTO_SEARCH.events, desc: true })),
+    enabled: term.length >= PHOTO_SEARCH.minQuery,
     staleTime: 60_000,
-    queryFn: async () => {
-      const r = await searchItems({ query: term, take: PHOTO_SEARCH.events, desc: true });
-      if (r.status !== 200) throw new Error(`item search ${r.status}`);
-      return r.data;
-    },
   });
 }

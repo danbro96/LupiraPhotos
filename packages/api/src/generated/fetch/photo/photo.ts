@@ -14,37 +14,12 @@ import type {
   PhotoListResponse,
   PhotoPlaceCount,
   PhotoStats,
-  ProblemDetails,
   RelocatePhotosRequest,
   RelocatePhotosResponse,
   SetPhotoLocationRequest
 } from '../../models';
 
 import { apiRequest } from '../../../transport';
-
-export type declarePhotoResponse200 = {
-  data: DeclaredPhotoResponse
-  status: 200
-}
-
-export type declarePhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type declarePhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type declarePhotoResponseSuccess = (declarePhotoResponse200) & {
-  headers: Headers;
-};
-export type declarePhotoResponseError = (declarePhotoResponse401 | declarePhotoResponse500) & {
-  headers: Headers;
-};
-
-export type declarePhotoResponse = (declarePhotoResponseSuccess | declarePhotoResponseError)
 
 export const getDeclarePhotoUrl = () => {
 
@@ -57,7 +32,7 @@ export const getDeclarePhotoUrl = () => {
 /**
  * @summary Declare an asset (idempotent) and receive a presigned upload URL while bytes are pending.
  */
-export const declarePhoto = async (declarePhotoRequest: DeclarePhotoRequest, options?: Parameters<typeof apiRequest>[1]): Promise<declarePhotoResponse> => {
+export const declarePhoto = async (declarePhotoRequest: DeclarePhotoRequest, options?: Parameters<typeof apiRequest>[1]): Promise<DeclaredPhotoResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -73,7 +48,7 @@ export const declarePhoto = async (declarePhotoRequest: DeclarePhotoRequest, opt
     }
     return headers;
   };
-return apiRequest<declarePhotoResponse>(getDeclarePhotoUrl(),
+return apiRequest<DeclaredPhotoResponse>(getDeclarePhotoUrl(),
   {
     ...options,
     method: 'POST',
@@ -82,30 +57,6 @@ return apiRequest<declarePhotoResponse>(getDeclarePhotoUrl(),
   }
 );}
 
-
-export type listPhotosResponse200 = {
-  data: PhotoListResponse
-  status: 200
-}
-
-export type listPhotosResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type listPhotosResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type listPhotosResponseSuccess = (listPhotosResponse200) & {
-  headers: Headers;
-};
-export type listPhotosResponseError = (listPhotosResponse401 | listPhotosResponse500) & {
-  headers: Headers;
-};
-
-export type listPhotosResponse = (listPhotosResponseSuccess | listPhotosResponseError)
 
 export const getListPhotosUrl = (params?: ListPhotosParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -125,9 +76,9 @@ export const getListPhotosUrl = (params?: ListPhotosParams,) => {
 /**
  * @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash.
  */
-export const listPhotos = async (params?: ListPhotosParams, options?: Parameters<typeof apiRequest>[1]): Promise<listPhotosResponse> => {
+export const listPhotos = async (params?: ListPhotosParams, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoListResponse> => {
 
-  return apiRequest<listPhotosResponse>(getListPhotosUrl(params),
+  return apiRequest<PhotoListResponse>(getListPhotosUrl(params),
   {
     ...options,
     method: 'GET'
@@ -136,35 +87,6 @@ export const listPhotos = async (params?: ListPhotosParams, options?: Parameters
   }
 );}
 
-
-export type completePhotoUploadResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type completePhotoUploadResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type completePhotoUploadResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type completePhotoUploadResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type completePhotoUploadResponseSuccess = (completePhotoUploadResponse200) & {
-  headers: Headers;
-};
-export type completePhotoUploadResponseError = (completePhotoUploadResponse401 | completePhotoUploadResponse404 | completePhotoUploadResponse500) & {
-  headers: Headers;
-};
-
-export type completePhotoUploadResponse = (completePhotoUploadResponseSuccess | completePhotoUploadResponseError)
 
 export const getCompletePhotoUploadUrl = (id: string,) => {
 
@@ -177,9 +99,9 @@ export const getCompletePhotoUploadUrl = (id: string,) => {
 /**
  * @summary Verify the uploaded bytes and queue processing (idempotent).
  */
-export const completePhotoUpload = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<completePhotoUploadResponse> => {
+export const completePhotoUpload = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<completePhotoUploadResponse>(getCompletePhotoUploadUrl(id),
+  return apiRequest<PhotoAssetDto>(getCompletePhotoUploadUrl(id),
   {
     ...options,
     method: 'POST'
@@ -188,35 +110,6 @@ export const completePhotoUpload = async (id: string, options?: Parameters<typeo
   }
 );}
 
-
-export type reprocessPhotoResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type reprocessPhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type reprocessPhotoResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type reprocessPhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type reprocessPhotoResponseSuccess = (reprocessPhotoResponse200) & {
-  headers: Headers;
-};
-export type reprocessPhotoResponseError = (reprocessPhotoResponse401 | reprocessPhotoResponse404 | reprocessPhotoResponse500) & {
-  headers: Headers;
-};
-
-export type reprocessPhotoResponse = (reprocessPhotoResponseSuccess | reprocessPhotoResponseError)
 
 export const getReprocessPhotoUrl = (id: string,) => {
 
@@ -229,9 +122,9 @@ export const getReprocessPhotoUrl = (id: string,) => {
 /**
  * @summary Re-queue a Ready or Failed asset through the processing pipeline.
  */
-export const reprocessPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<reprocessPhotoResponse> => {
+export const reprocessPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<reprocessPhotoResponse>(getReprocessPhotoUrl(id),
+  return apiRequest<PhotoAssetDto>(getReprocessPhotoUrl(id),
   {
     ...options,
     method: 'POST'
@@ -240,35 +133,6 @@ export const reprocessPhoto = async (id: string, options?: Parameters<typeof api
   }
 );}
 
-
-export type trashPhotoResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type trashPhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type trashPhotoResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type trashPhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type trashPhotoResponseSuccess = (trashPhotoResponse200) & {
-  headers: Headers;
-};
-export type trashPhotoResponseError = (trashPhotoResponse401 | trashPhotoResponse404 | trashPhotoResponse500) & {
-  headers: Headers;
-};
-
-export type trashPhotoResponse = (trashPhotoResponseSuccess | trashPhotoResponseError)
 
 export const getTrashPhotoUrl = (id: string,) => {
 
@@ -281,9 +145,9 @@ export const getTrashPhotoUrl = (id: string,) => {
 /**
  * @summary Move an asset to the trash (idempotent). It keeps its bytes and status until restored or purged.
  */
-export const trashPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<trashPhotoResponse> => {
+export const trashPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<trashPhotoResponse>(getTrashPhotoUrl(id),
+  return apiRequest<PhotoAssetDto>(getTrashPhotoUrl(id),
   {
     ...options,
     method: 'POST'
@@ -292,35 +156,6 @@ export const trashPhoto = async (id: string, options?: Parameters<typeof apiRequ
   }
 );}
 
-
-export type restorePhotoResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type restorePhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type restorePhotoResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type restorePhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type restorePhotoResponseSuccess = (restorePhotoResponse200) & {
-  headers: Headers;
-};
-export type restorePhotoResponseError = (restorePhotoResponse401 | restorePhotoResponse404 | restorePhotoResponse500) & {
-  headers: Headers;
-};
-
-export type restorePhotoResponse = (restorePhotoResponseSuccess | restorePhotoResponseError)
 
 export const getRestorePhotoUrl = (id: string,) => {
 
@@ -333,9 +168,9 @@ export const getRestorePhotoUrl = (id: string,) => {
 /**
  * @summary Take an asset back out of the trash (idempotent).
  */
-export const restorePhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<restorePhotoResponse> => {
+export const restorePhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<restorePhotoResponse>(getRestorePhotoUrl(id),
+  return apiRequest<PhotoAssetDto>(getRestorePhotoUrl(id),
   {
     ...options,
     method: 'POST'
@@ -344,30 +179,6 @@ export const restorePhoto = async (id: string, options?: Parameters<typeof apiRe
   }
 );}
 
-
-export type lookupPhotosResponse200 = {
-  data: PhotoListResponse
-  status: 200
-}
-
-export type lookupPhotosResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type lookupPhotosResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type lookupPhotosResponseSuccess = (lookupPhotosResponse200) & {
-  headers: Headers;
-};
-export type lookupPhotosResponseError = (lookupPhotosResponse401 | lookupPhotosResponse500) & {
-  headers: Headers;
-};
-
-export type lookupPhotosResponse = (lookupPhotosResponseSuccess | lookupPhotosResponseError)
 
 export const getLookupPhotosUrl = () => {
 
@@ -380,7 +191,7 @@ export const getLookupPhotosUrl = () => {
 /**
  * @summary Hydrate up to 200 assets by id — turns relation references into renderable items.
  */
-export const lookupPhotos = async (lookupPhotosRequest: LookupPhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<lookupPhotosResponse> => {
+export const lookupPhotos = async (lookupPhotosRequest: LookupPhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoListResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -396,7 +207,7 @@ export const lookupPhotos = async (lookupPhotosRequest: LookupPhotosRequest, opt
     }
     return headers;
   };
-return apiRequest<lookupPhotosResponse>(getLookupPhotosUrl(),
+return apiRequest<PhotoListResponse>(getLookupPhotosUrl(),
   {
     ...options,
     method: 'POST',
@@ -405,30 +216,6 @@ return apiRequest<lookupPhotosResponse>(getLookupPhotosUrl(),
   }
 );}
 
-
-export type getPhotoStatsResponse200 = {
-  data: PhotoStats
-  status: 200
-}
-
-export type getPhotoStatsResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type getPhotoStatsResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type getPhotoStatsResponseSuccess = (getPhotoStatsResponse200) & {
-  headers: Headers;
-};
-export type getPhotoStatsResponseError = (getPhotoStatsResponse401 | getPhotoStatsResponse500) & {
-  headers: Headers;
-};
-
-export type getPhotoStatsResponse = (getPhotoStatsResponseSuccess | getPhotoStatsResponseError)
 
 export const getGetPhotoStatsUrl = () => {
 
@@ -441,9 +228,9 @@ export const getGetPhotoStatsUrl = () => {
 /**
  * @summary Library totals and counts by kind, status, geotag source and month.
  */
-export const getPhotoStats = async ( options?: Parameters<typeof apiRequest>[1]): Promise<getPhotoStatsResponse> => {
+export const getPhotoStats = async ( options?: Parameters<typeof apiRequest>[1]): Promise<PhotoStats> => {
 
-  return apiRequest<getPhotoStatsResponse>(getGetPhotoStatsUrl(),
+  return apiRequest<PhotoStats>(getGetPhotoStatsUrl(),
   {
     ...options,
     method: 'GET'
@@ -452,30 +239,6 @@ export const getPhotoStats = async ( options?: Parameters<typeof apiRequest>[1])
   }
 );}
 
-
-export type listPhotoPlacesResponse200 = {
-  data: PhotoPlaceCount[]
-  status: 200
-}
-
-export type listPhotoPlacesResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type listPhotoPlacesResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type listPhotoPlacesResponseSuccess = (listPhotoPlacesResponse200) & {
-  headers: Headers;
-};
-export type listPhotoPlacesResponseError = (listPhotoPlacesResponse401 | listPhotoPlacesResponse500) & {
-  headers: Headers;
-};
-
-export type listPhotoPlacesResponse = (listPhotoPlacesResponseSuccess | listPhotoPlacesResponseError)
 
 export const getListPhotoPlacesUrl = (params?: ListPhotoPlacesParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -495,9 +258,9 @@ export const getListPhotoPlacesUrl = (params?: ListPhotoPlacesParams,) => {
 /**
  * @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring).
  */
-export const listPhotoPlaces = async (params?: ListPhotoPlacesParams, options?: Parameters<typeof apiRequest>[1]): Promise<listPhotoPlacesResponse> => {
+export const listPhotoPlaces = async (params?: ListPhotoPlacesParams, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoPlaceCount[]> => {
 
-  return apiRequest<listPhotoPlacesResponse>(getListPhotoPlacesUrl(params),
+  return apiRequest<PhotoPlaceCount[]>(getListPhotoPlacesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -506,35 +269,6 @@ export const listPhotoPlaces = async (params?: ListPhotoPlacesParams, options?: 
   }
 );}
 
-
-export type getPhotoResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type getPhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type getPhotoResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type getPhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type getPhotoResponseSuccess = (getPhotoResponse200) & {
-  headers: Headers;
-};
-export type getPhotoResponseError = (getPhotoResponse401 | getPhotoResponse404 | getPhotoResponse500) & {
-  headers: Headers;
-};
-
-export type getPhotoResponse = (getPhotoResponseSuccess | getPhotoResponseError)
 
 export const getGetPhotoUrl = (id: string,) => {
 
@@ -547,9 +281,9 @@ export const getGetPhotoUrl = (id: string,) => {
 /**
  * @summary One asset with presigned original + thumbnail URLs.
  */
-export const getPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<getPhotoResponse> => {
+export const getPhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<getPhotoResponse>(getGetPhotoUrl(id),
+  return apiRequest<PhotoAssetDto>(getGetPhotoUrl(id),
   {
     ...options,
     method: 'GET'
@@ -558,35 +292,6 @@ export const getPhoto = async (id: string, options?: Parameters<typeof apiReques
   }
 );}
 
-
-export type deletePhotoResponse204 = {
-  data: void
-  status: 204
-}
-
-export type deletePhotoResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type deletePhotoResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type deletePhotoResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type deletePhotoResponseSuccess = (deletePhotoResponse204) & {
-  headers: Headers;
-};
-export type deletePhotoResponseError = (deletePhotoResponse401 | deletePhotoResponse404 | deletePhotoResponse500) & {
-  headers: Headers;
-};
-
-export type deletePhotoResponse = (deletePhotoResponseSuccess | deletePhotoResponseError)
 
 export const getDeletePhotoUrl = (id: string,) => {
 
@@ -599,9 +304,9 @@ export const getDeletePhotoUrl = (id: string,) => {
 /**
  * @summary Delete an asset permanently, trashed or not: objects first, then the document.
  */
-export const deletePhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<deletePhotoResponse> => {
+export const deletePhoto = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<void> => {
 
-  return apiRequest<deletePhotoResponse>(getDeletePhotoUrl(id),
+  return apiRequest<void>(getDeletePhotoUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -610,35 +315,6 @@ export const deletePhoto = async (id: string, options?: Parameters<typeof apiReq
   }
 );}
 
-
-export type setPhotoLocationResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type setPhotoLocationResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type setPhotoLocationResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type setPhotoLocationResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type setPhotoLocationResponseSuccess = (setPhotoLocationResponse200) & {
-  headers: Headers;
-};
-export type setPhotoLocationResponseError = (setPhotoLocationResponse401 | setPhotoLocationResponse404 | setPhotoLocationResponse500) & {
-  headers: Headers;
-};
-
-export type setPhotoLocationResponse = (setPhotoLocationResponseSuccess | setPhotoLocationResponseError)
 
 export const getSetPhotoLocationUrl = (id: string,) => {
 
@@ -652,7 +328,7 @@ export const getSetPhotoLocationUrl = (id: string,) => {
  * @summary Hand-set the location; outranks the file's own GPS and survives reprocessing.
  */
 export const setPhotoLocation = async (id: string,
-    setPhotoLocationRequest: SetPhotoLocationRequest, options?: Parameters<typeof apiRequest>[1]): Promise<setPhotoLocationResponse> => {
+    setPhotoLocationRequest: SetPhotoLocationRequest, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -668,7 +344,7 @@ export const setPhotoLocation = async (id: string,
     }
     return headers;
   };
-return apiRequest<setPhotoLocationResponse>(getSetPhotoLocationUrl(id),
+return apiRequest<PhotoAssetDto>(getSetPhotoLocationUrl(id),
   {
     ...options,
     method: 'PUT',
@@ -677,35 +353,6 @@ return apiRequest<setPhotoLocationResponse>(getSetPhotoLocationUrl(id),
   }
 );}
 
-
-export type clearPhotoLocationResponse200 = {
-  data: PhotoAssetDto
-  status: 200
-}
-
-export type clearPhotoLocationResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type clearPhotoLocationResponse404 = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type clearPhotoLocationResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type clearPhotoLocationResponseSuccess = (clearPhotoLocationResponse200) & {
-  headers: Headers;
-};
-export type clearPhotoLocationResponseError = (clearPhotoLocationResponse401 | clearPhotoLocationResponse404 | clearPhotoLocationResponse500) & {
-  headers: Headers;
-};
-
-export type clearPhotoLocationResponse = (clearPhotoLocationResponseSuccess | clearPhotoLocationResponseError)
 
 export const getClearPhotoLocationUrl = (id: string,) => {
 
@@ -718,9 +365,9 @@ export const getClearPhotoLocationUrl = (id: string,) => {
 /**
  * @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).
  */
-export const clearPhotoLocation = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<clearPhotoLocationResponse> => {
+export const clearPhotoLocation = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
 
-  return apiRequest<clearPhotoLocationResponse>(getClearPhotoLocationUrl(id),
+  return apiRequest<PhotoAssetDto>(getClearPhotoLocationUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -729,30 +376,6 @@ export const clearPhotoLocation = async (id: string, options?: Parameters<typeof
   }
 );}
 
-
-export type relocatePhotosResponse200 = {
-  data: RelocatePhotosResponse
-  status: 200
-}
-
-export type relocatePhotosResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type relocatePhotosResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type relocatePhotosResponseSuccess = (relocatePhotosResponse200) & {
-  headers: Headers;
-};
-export type relocatePhotosResponseError = (relocatePhotosResponse401 | relocatePhotosResponse500) & {
-  headers: Headers;
-};
-
-export type relocatePhotosResponse = (relocatePhotosResponseSuccess | relocatePhotosResponseError)
 
 export const getRelocatePhotosUrl = () => {
 
@@ -765,7 +388,7 @@ export const getRelocatePhotosUrl = () => {
 /**
  * @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.
  */
-export const relocatePhotos = async (relocatePhotosRequest: RelocatePhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<relocatePhotosResponse> => {
+export const relocatePhotos = async (relocatePhotosRequest: RelocatePhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<RelocatePhotosResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -781,7 +404,7 @@ export const relocatePhotos = async (relocatePhotosRequest: RelocatePhotosReques
     }
     return headers;
   };
-return apiRequest<relocatePhotosResponse>(getRelocatePhotosUrl(),
+return apiRequest<RelocatePhotosResponse>(getRelocatePhotosUrl(),
   {
     ...options,
     method: 'POST',
@@ -790,30 +413,6 @@ return apiRequest<relocatePhotosResponse>(getRelocatePhotosUrl(),
   }
 );}
 
-
-export type emptyPhotoTrashResponse204 = {
-  data: void
-  status: 204
-}
-
-export type emptyPhotoTrashResponse401 = {
-  data: ProblemDetails
-  status: 401
-}
-
-export type emptyPhotoTrashResponse500 = {
-  data: ProblemDetails
-  status: 500
-}
-
-export type emptyPhotoTrashResponseSuccess = (emptyPhotoTrashResponse204) & {
-  headers: Headers;
-};
-export type emptyPhotoTrashResponseError = (emptyPhotoTrashResponse401 | emptyPhotoTrashResponse500) & {
-  headers: Headers;
-};
-
-export type emptyPhotoTrashResponse = (emptyPhotoTrashResponseSuccess | emptyPhotoTrashResponseError)
 
 export const getEmptyPhotoTrashUrl = () => {
 
@@ -826,9 +425,9 @@ export const getEmptyPhotoTrashUrl = () => {
 /**
  * @summary Permanently delete every trashed asset.
  */
-export const emptyPhotoTrash = async ( options?: Parameters<typeof apiRequest>[1]): Promise<emptyPhotoTrashResponse> => {
+export const emptyPhotoTrash = async ( options?: Parameters<typeof apiRequest>[1]): Promise<void> => {
 
-  return apiRequest<emptyPhotoTrashResponse>(getEmptyPhotoTrashUrl(),
+  return apiRequest<void>(getEmptyPhotoTrashUrl(),
   {
     ...options,
     method: 'DELETE'
