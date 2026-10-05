@@ -152,6 +152,18 @@ const refresh = createTokenRefresher({
   log: logDebug,
 });
 
+const GEO_AUDIENCE = 'lupira-geo';
+
+/** False for a token minted before `lupira-geo-aud` joined the scopes, so geo calls are skipped rather than 401ing. */
+export function geoReady(s: Pick<AuthState, 'authMode' | 'token'>): boolean {
+  if (s.authMode === 'dev') return true;
+  if (!s.token) return false;
+  const aud = decodeJwt(s.token).aud;
+  return Array.isArray(aud) ? aud.includes(GEO_AUDIENCE) : aud === GEO_AUDIENCE;
+}
+
+export const useGeoReady = (): boolean => useAuth(geoReady);
+
 export function onSignIn(cb: () => void): () => void {
   signInListeners.add(cb);
   return () => signInListeners.delete(cb);

@@ -37,6 +37,25 @@ public class BearerPassThroughTests(BffTestFactory factory) : IClassFixture<BffT
     }
 
     [Theory]
+    [InlineData("GET", "/geo-api/me/places", "/me/places")]
+    [InlineData("PUT", "/photo-api/photos/0b3f3a50-6f2f-4a8e-9a53-8f3a3f1d2c11/location", "/photos/0b3f3a50-6f2f-4a8e-9a53-8f3a3f1d2c11/location")]
+    public async Task Geo_and_location_calls_arrive_prefix_stripped_with_the_bearer(string method, string path, string upstreamPath)
+    {
+        var client = Client();
+        var token = BffTestFactory.MintToken();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var request = new HttpRequestMessage(new HttpMethod(method), path);
+        if (method == "PUT") request.Content = JsonContent.Create(new { });
+
+        var resp = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        var echo = (await resp.Content.ReadFromJsonAsync<UpstreamEcho>())!;
+        Assert.Equal(upstreamPath, echo.Path);
+        Assert.Equal($"Bearer {token}", echo.Authorization);
+    }
+
+    [Theory]
     [InlineData("/api/items")]
     [InlineData("/photo-api/photos")]
     public async Task Anonymous_api_calls_get_401_not_a_redirect(string path)

@@ -14,7 +14,10 @@ import type {
   PhotoListResponse,
   PhotoPlaceCount,
   PhotoStats,
-  ProblemDetails
+  ProblemDetails,
+  RelocatePhotosRequest,
+  RelocatePhotosResponse,
+  SetPhotoLocationRequest
 } from '../../models';
 
 import { apiRequest } from '../../../transport';
@@ -604,6 +607,186 @@ export const deletePhoto = async (id: string, options?: Parameters<typeof apiReq
     method: 'DELETE'
 
 
+  }
+);}
+
+
+export type setPhotoLocationResponse200 = {
+  data: PhotoAssetDto
+  status: 200
+}
+
+export type setPhotoLocationResponse401 = {
+  data: ProblemDetails
+  status: 401
+}
+
+export type setPhotoLocationResponse404 = {
+  data: ProblemDetails
+  status: 404
+}
+
+export type setPhotoLocationResponse500 = {
+  data: ProblemDetails
+  status: 500
+}
+
+export type setPhotoLocationResponseSuccess = (setPhotoLocationResponse200) & {
+  headers: Headers;
+};
+export type setPhotoLocationResponseError = (setPhotoLocationResponse401 | setPhotoLocationResponse404 | setPhotoLocationResponse500) & {
+  headers: Headers;
+};
+
+export type setPhotoLocationResponse = (setPhotoLocationResponseSuccess | setPhotoLocationResponseError)
+
+export const getSetPhotoLocationUrl = (id: string,) => {
+
+
+
+
+  return `/photo-api/photos/${id}/location`
+}
+
+/**
+ * @summary Hand-set the location; outranks the file's own GPS and survives reprocessing.
+ */
+export const setPhotoLocation = async (id: string,
+    setPhotoLocationRequest: SetPhotoLocationRequest, options?: Parameters<typeof apiRequest>[1]): Promise<setPhotoLocationResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiRequest<setPhotoLocationResponse>(getSetPhotoLocationUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(setPhotoLocationRequest)
+  }
+);}
+
+
+export type clearPhotoLocationResponse200 = {
+  data: PhotoAssetDto
+  status: 200
+}
+
+export type clearPhotoLocationResponse401 = {
+  data: ProblemDetails
+  status: 401
+}
+
+export type clearPhotoLocationResponse404 = {
+  data: ProblemDetails
+  status: 404
+}
+
+export type clearPhotoLocationResponse500 = {
+  data: ProblemDetails
+  status: 500
+}
+
+export type clearPhotoLocationResponseSuccess = (clearPhotoLocationResponse200) & {
+  headers: Headers;
+};
+export type clearPhotoLocationResponseError = (clearPhotoLocationResponse401 | clearPhotoLocationResponse404 | clearPhotoLocationResponse500) & {
+  headers: Headers;
+};
+
+export type clearPhotoLocationResponse = (clearPhotoLocationResponseSuccess | clearPhotoLocationResponseError)
+
+export const getClearPhotoLocationUrl = (id: string,) => {
+
+
+
+
+  return `/photo-api/photos/${id}/location`
+}
+
+/**
+ * @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).
+ */
+export const clearPhotoLocation = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<clearPhotoLocationResponse> => {
+
+  return apiRequest<clearPhotoLocationResponse>(getClearPhotoLocationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+export type relocatePhotosResponse200 = {
+  data: RelocatePhotosResponse
+  status: 200
+}
+
+export type relocatePhotosResponse401 = {
+  data: ProblemDetails
+  status: 401
+}
+
+export type relocatePhotosResponse500 = {
+  data: ProblemDetails
+  status: 500
+}
+
+export type relocatePhotosResponseSuccess = (relocatePhotosResponse200) & {
+  headers: Headers;
+};
+export type relocatePhotosResponseError = (relocatePhotosResponse401 | relocatePhotosResponse500) & {
+  headers: Headers;
+};
+
+export type relocatePhotosResponse = (relocatePhotosResponseSuccess | relocatePhotosResponseError)
+
+export const getRelocatePhotosUrl = () => {
+
+
+
+
+  return `/photo-api/photos/relocate`
+}
+
+/**
+ * @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.
+ */
+export const relocatePhotos = async (relocatePhotosRequest: RelocatePhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<relocatePhotosResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiRequest<relocatePhotosResponse>(getRelocatePhotosUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(relocatePhotosRequest)
   }
 );}
 

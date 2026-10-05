@@ -808,6 +808,213 @@
         ]
       }
     },
+    "/photo-api/photos/{id}/location": {
+      "put": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Hand-set the location; outranks the file's own GPS and survives reprocessing.",
+        "operationId": "SetPhotoLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPhotoLocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).",
+        "operationId": "ClearPhotoLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/photo-api/photos/relocate": {
+      "post": {
+        "tags": [
+          "photo"
+        ],
+        "summary": "Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.",
+        "operationId": "RelocatePhotos",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelocatePhotosRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelocatePhotosResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/photo-api/photos/trash": {
       "delete": {
         "tags": [
@@ -1329,6 +1536,350 @@
           }
         ]
       }
+    },
+    "/geo-api/places/suggest": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Typeahead: trigram-ranked suggestions over places (names + aliases) and AdminArea localities, discriminated by type.",
+        "operationId": "SuggestPlaces",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceSuggestionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/geo-api/places/{id}": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "A single place with its aliases, external ids, and containment chain (outermost→innermost). Follows merge redirects.",
+        "operationId": "GetPlace",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/geo-api/places/lookup": {
+      "post": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Bulk get-by-ids (max 200) — hydrate stored place ids into coordinates in one call. Responses align index-for-index; a null place means unknown or deleted, a merged id returns the survivor. Containment is omitted (use GET /places/{id} for detail).",
+        "operationId": "LookupPlaces",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupPlacesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceLookupItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/geo-api/geocode/forward": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "Text → candidate coordinates + structured address (cached).",
+        "operationId": "ForwardGeocode",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GeocodeResultDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/geo-api/me/places": {
+      "get": {
+        "tags": [
+          "geo"
+        ],
+        "summary": "The caller's saved places / personal labels (favorites first).",
+        "operationId": "ListSavedPlaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SavedPlaceDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Cookie": [ ]
+          },
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1344,6 +1895,62 @@
           "Rescore"
         ],
         "description": "A deterministic, no-LLM action executed directly at fire time."
+      },
+      "AdminAreaDto": {
+        "required": [
+          "id",
+          "level",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AdminLevel"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isoCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "withinAreaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          }
+        },
+        "description": "A node in the administrative containment tree (Country/Region/Locality)."
+      },
+      "AdminLevel": {
+        "enum": [
+          "Country",
+          "Region",
+          "Locality"
+        ],
+        "description": "Level of an AdminArea in the containment tree (Locality → Region → Country)."
       },
       "AssetKind": {
         "enum": [
@@ -2109,6 +2716,15 @@
         },
         "description": "Many references of one kind unlinked from one item in a single call (e.g. photos removed from an event's album)."
       },
+      "ExternalScheme": {
+        "enum": [
+          "Osm",
+          "Wikidata",
+          "Google",
+          "Geonames"
+        ],
+        "description": "External identity system a PlaceExternalId reconciles against."
+      },
       "FallbackMode": {
         "enum": [
           "Retry",
@@ -2123,6 +2739,70 @@
           "Absent"
         ],
         "description": "A field is fully present, weak/partial (0.5), or absent."
+      },
+      "GeocodeResultDto": {
+        "required": [
+          "displayName",
+          "latitude",
+          "longitude",
+          "category"
+        ],
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "category": {
+            "$ref": "#/components/schemas/PlaceCategory"
+          },
+          "countryCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "country": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "region": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "locality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "osmType": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "OSM identity of the hit (e.g. \"way\" + 175761024) — the key for `POST /places/from-geocode`."
+          },
+          "osmId": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int64"
+          }
+        },
+        "description": "A geocoding hit — a coordinate + display label + best-effort structured address and category. Coarse by\n            design (coordinates are quantized to the cache grid)."
       },
       "GeotagSource": {
         "enum": [
@@ -2394,6 +3074,22 @@
           }
         },
         "description": "Hydrates a set of asset ids in one call — used to turn calendar-item relation references\n            into renderable items."
+      },
+      "LookupPlacesRequest": {
+        "required": [
+          "ids"
+        ],
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "description": "Bulk get-by-ids (max 200) — hydrates place ids other services store (calendar items, contact addresses)\n            into coordinates in one call. Duplicates are allowed; responses align index-for-index with the input."
       },
       "ModelTier": {
         "enum": [
@@ -2975,6 +3671,246 @@
           }
         }
       },
+      "PlaceAliasDto": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lang": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PlaceCategory": {
+        "enum": [
+          "Unknown",
+          "Home",
+          "Office",
+          "Restaurant",
+          "Cafe",
+          "Bar",
+          "Store",
+          "Grocery",
+          "School",
+          "University",
+          "Clinic",
+          "Hospital",
+          "Pharmacy",
+          "Gym",
+          "Park",
+          "Airport",
+          "Station",
+          "BusStop",
+          "Hotel",
+          "Landmark",
+          "Government",
+          "Worship",
+          "Other"
+        ],
+        "description": "Semantic type of a place — drives filtering and iconography. Kept vendor-neutral and coarse; extend as needed."
+      },
+      "PlaceDto": {
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "category",
+          "source",
+          "verified"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PlaceKind"
+          },
+          "category": {
+            "$ref": "#/components/schemas/PlaceCategory"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "formattedAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/PlaceSource"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "withinAreaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "distanceM": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaceAliasDto"
+            }
+          },
+          "containment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAreaDto"
+            }
+          },
+          "externalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaceExternalIdDto"
+            }
+          }
+        },
+        "description": "A gazetteer place. Coordinates are plain lat/lon on the wire; `Containment` is the AdminArea chain\n            outermost→innermost. `DistanceM` is populated only on proximity (`near=`) searches."
+      },
+      "PlaceExternalIdDto": {
+        "required": [
+          "scheme",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "scheme": {
+            "$ref": "#/components/schemas/ExternalScheme"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "PlaceKind": {
+        "enum": [
+          "Poi",
+          "Address",
+          "Area"
+        ],
+        "description": "What a Place is: a point-of-interest (a named venue/entity), a plain street address, or a whole\n            settlement/administrative area (city, municipality, region, country) — a centroid, not somewhere you arrive."
+      },
+      "PlaceLookupItemDto": {
+        "required": [
+          "requestedId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestedId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "place": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PlaceDto"
+              }
+            ]
+          }
+        },
+        "description": "`Place` is null when the id is unknown or soft-deleted; on a merge redirect it is the survivor\n        (`Place.Id != RequestedId`). Containment is omitted — `GET /places/{id}` remains the detail call."
+      },
+      "PlaceSource": {
+        "enum": [
+          "User",
+          "Geocoded",
+          "Imported"
+        ],
+        "description": "Provenance of a gazetteer entry: created by a user (may be unverified), derived from geocoding, or imported from a gazetteer."
+      },
+      "PlaceSuggestionDto": {
+        "required": [
+          "id",
+          "type",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SuggestionType"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PlaceCategory"
+              }
+            ]
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "context": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "A typeahead suggestion: a gazetteer place (name/alias trigram match) or an AdminArea locality — cities come\n            from the GeoNames seed, so they suggest without anyone having geocoded a POI there. `Context` disambiguates\n            (formatted address for places, parent area for localities)."
+      },
       "PresenceDetail": {
         "required": [
           "status"
@@ -3156,6 +4092,194 @@
             ]
           }
         }
+      },
+      "RelocatePhotosRequest": {
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "label": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A curated place name; omit to reverse-geocode the coordinates."
+          },
+          "ids": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "from": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "to": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "cameraModel": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The EXIF camera model, case-insensitive (`GT-I9300`)."
+          },
+          "atLatitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "description": "Only assets currently at this coordinate (within ~1 m); pairs with double? RelocatePhotosRequest.AtLongitude.",
+            "format": "double"
+          },
+          "atLongitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "Report what would move without changing anything."
+          }
+        },
+        "description": "Hand-sets one location on every asset the selector matches — e.g. all of one camera's photos in a\n            window that carry the same stale GPS fix. Needs List&lt;Guid&gt;? RelocatePhotosRequest.Ids or both DateTimeOffset? RelocatePhotosRequest.From and\n            DateTimeOffset? RelocatePhotosRequest.To; the other criteria narrow further. Duplicates and trashed assets are never matched."
+      },
+      "RelocatePhotosResponse": {
+        "required": [
+          "count",
+          "ids"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "placeLabel": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The label the moved assets now show; null on a dry run."
+          }
+        }
+      },
+      "SavedPlaceDto": {
+        "required": [
+          "id",
+          "label",
+          "isFavorite"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "placeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "label": {
+            "type": "string"
+          },
+          "icon": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "notes": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "description": "A caller's saved place / personal label. References a gazetteer place, or carries a raw coordinate."
+      },
+      "SetPhotoLocationRequest": {
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "label": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A curated place name; omit to reverse-geocode the coordinates."
+          }
+        },
+        "description": "A hand-set location; outranks the file's own GPS until cleared."
+      },
+      "SuggestionType": {
+        "enum": [
+          "Place",
+          "Locality"
+        ],
+        "description": "What a typeahead suggestion points at: a gazetteer SuggestionType.Place or an AdminArea locality."
       },
       "TakenAtSource": {
         "enum": [

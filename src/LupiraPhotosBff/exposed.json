@@ -13,19 +13,29 @@
       "POST /items/{id}/relations/batch",
       "POST /items/{id}/relations/batch/delete"
     ],
+    "geo-api": [
+      "GET /geocode/forward",
+      "GET /me/places",
+      "GET /places/suggest",
+      "GET /places/{id}",
+      "POST /places/lookup"
+    ],
     "photo-api": [
       "DELETE /photos/trash",
       "DELETE /photos/{id}",
+      "DELETE /photos/{id}/location",
       "GET /photos",
       "GET /photos/places",
       "GET /photos/stats",
       "GET /photos/{id}",
       "POST /photos",
       "POST /photos/lookup",
+      "POST /photos/relocate",
       "POST /photos/{id}/complete",
       "POST /photos/{id}/reprocess",
       "POST /photos/{id}/restore",
-      "POST /photos/{id}/trash"
+      "POST /photos/{id}/trash",
+      "PUT /photos/{id}/location"
     ]
   }
 }

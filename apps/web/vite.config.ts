@@ -7,7 +7,7 @@ import babel from "@rolldown/plugin-babel";
 // browser only talks to the Vite origin (:5176), which proxies these through — so the session cookie
 // stays first-party and there is no CORS.
 const backend = process.env.BACKEND_ORIGIN ?? "http://localhost:5183";
-const proxied = ["/api", "/photo-api", "/auth", "/signin-oidc", "/signout-callback-oidc", "/livez", "/readyz"];
+const proxied = ["/api", "/photo-api", "/geo-api", "/auth", "/signin-oidc", "/signout-callback-oidc", "/livez", "/readyz"];
 
 export default defineConfig({
   plugins: [react(), babel({ presets: [reactCompilerPreset({ panicThreshold: "all_errors" })] })],

@@ -21,6 +21,12 @@ Web `/` and the mobile app's root screen.
 
 Photo↔event links are cal-api `Relation`s with `toKind: 'photo'` (`GET /relations/edges?toKind=photo` returns the whole map in one call). Candidates come from items around `takenAt` and are always confirmed, never auto-linked. The window is `@danbro96/lupira-domain-photos/photoWindow`, so every client that suggests links suggests the same set. Event titles come from `GET /items/{id}`.
 
+## Location and saved places
+
+- Photo location is photo-api's: `PUT /photos/{id}/location` and `POST /photos/relocate` (up to 2000 ids) take coordinates plus a label and overwrite measured fixes; `DELETE /photos/{id}/location` clears the override and re-queues the photo, so the original position returns asynchronously. Send a label with every set, or the server reverse-geocodes and may leave it null.
+- Targets come from geo-api through the BFF: `GET /places/suggest` and `GET /geocode/forward` (place and address search), `GET /places/{id}` and `POST /places/lookup` (coordinates for a cal event's `placeId`, up to 200 ids), `GET /me/places` (saved places such as "Home", coordinates null when a linked place was deleted). Nothing else of geo-api is reachable.
+- Mobile skips geo calls while `useGeoReady` is false (token minted before `lupira-geo-aud` joined the scopes; a sign-out/in fixes it). Geo 401/403/404 hides the geo features on both clients.
+
 ## Images and caching
 
 - **Presigned URLs rotate their signature**, so mobile image caches key on the asset id via `source.cacheKey` (`ui/photos/imageCache` — `recyclingKey` only resets recycled views, it is not a cache key). photo-api reuses each signed URL for half its life so the browser cache hits too, and `staleTime` stays well inside the 24 h thumb expiry.

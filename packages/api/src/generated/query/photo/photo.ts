@@ -33,7 +33,10 @@ import type {
   PhotoListResponse,
   PhotoPlaceCount,
   PhotoStats,
-  ProblemDetails
+  ProblemDetails,
+  RelocatePhotosRequest,
+  RelocatePhotosResponse,
+  SetPhotoLocationRequest
 } from '../../models';
 
 import { apiRequest } from '../../../transport';
@@ -1014,6 +1017,254 @@ export const useDeletePhoto = <TError = ProblemDetails,
         TContext
       > => {
       return useMutation(getDeletePhotoMutationOptions(options), queryClient);
+    }
+    export const getSetPhotoLocationUrl = (id: string,) => {
+
+
+
+
+  return `/photo-api/photos/${id}/location`
+}
+
+/**
+ * @summary Hand-set the location; outranks the file's own GPS and survives reprocessing.
+ */
+export const setPhotoLocation = async (id: string,
+    setPhotoLocationRequest: SetPhotoLocationRequest, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiRequest<PhotoAssetDto>(getSetPhotoLocationUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(setPhotoLocationRequest)
+  }
+);}
+
+
+
+
+
+export const getSetPhotoLocationMutationKey = () => ['setPhotoLocation'] as const;
+
+export const getSetPhotoLocationMutationOptions = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPhotoLocation>>, TError,SetPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+): UseMutationOptions<Awaited<ReturnType<typeof setPhotoLocation>>, TError,SetPhotoLocationMutationVariables, TContext> => {
+
+const mutationKey = getSetPhotoLocationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setPhotoLocation>>, SetPhotoLocationMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setPhotoLocation(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetPhotoLocationMutationResult = NonNullable<Awaited<ReturnType<typeof setPhotoLocation>>>
+    export type SetPhotoLocationMutationBody = SetPhotoLocationRequest
+    export type SetPhotoLocationMutationError = ProblemDetails
+    export type SetPhotoLocationMutationVariables = {id: string;data: SetPhotoLocationRequest}
+
+    /**
+ * @summary Hand-set the location; outranks the file's own GPS and survives reprocessing.
+ */
+export const useSetPhotoLocation = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPhotoLocation>>, TError,SetPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof setPhotoLocation>>,
+        TError,
+        SetPhotoLocationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSetPhotoLocationMutationOptions(options), queryClient);
+    }
+    export const getClearPhotoLocationUrl = (id: string,) => {
+
+
+
+
+  return `/photo-api/photos/${id}/location`
+}
+
+/**
+ * @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).
+ */
+export const clearPhotoLocation = async (id: string, options?: Parameters<typeof apiRequest>[1]): Promise<PhotoAssetDto> => {
+
+  return apiRequest<PhotoAssetDto>(getClearPhotoLocationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getClearPhotoLocationMutationKey = () => ['clearPhotoLocation'] as const;
+
+export const getClearPhotoLocationMutationOptions = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearPhotoLocation>>, TError,ClearPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+): UseMutationOptions<Awaited<ReturnType<typeof clearPhotoLocation>>, TError,ClearPhotoLocationMutationVariables, TContext> => {
+
+const mutationKey = getClearPhotoLocationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearPhotoLocation>>, ClearPhotoLocationMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  clearPhotoLocation(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClearPhotoLocationMutationResult = NonNullable<Awaited<ReturnType<typeof clearPhotoLocation>>>
+
+    export type ClearPhotoLocationMutationError = ProblemDetails
+    export type ClearPhotoLocationMutationVariables = {id: string}
+
+    /**
+ * @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).
+ */
+export const useClearPhotoLocation = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearPhotoLocation>>, TError,ClearPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof clearPhotoLocation>>,
+        TError,
+        ClearPhotoLocationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getClearPhotoLocationMutationOptions(options), queryClient);
+    }
+    export const getRelocatePhotosUrl = () => {
+
+
+
+
+  return `/photo-api/photos/relocate`
+}
+
+/**
+ * @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.
+ */
+export const relocatePhotos = async (relocatePhotosRequest: RelocatePhotosRequest, options?: Parameters<typeof apiRequest>[1]): Promise<RelocatePhotosResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return apiRequest<RelocatePhotosResponse>(getRelocatePhotosUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(relocatePhotosRequest)
+  }
+);}
+
+
+
+
+
+export const getRelocatePhotosMutationKey = () => ['relocatePhotos'] as const;
+
+export const getRelocatePhotosMutationOptions = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof relocatePhotos>>, TError,RelocatePhotosMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+): UseMutationOptions<Awaited<ReturnType<typeof relocatePhotos>>, TError,RelocatePhotosMutationVariables, TContext> => {
+
+const mutationKey = getRelocatePhotosMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof relocatePhotos>>, RelocatePhotosMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  relocatePhotos(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RelocatePhotosMutationResult = NonNullable<Awaited<ReturnType<typeof relocatePhotos>>>
+    export type RelocatePhotosMutationBody = RelocatePhotosRequest
+    export type RelocatePhotosMutationError = ProblemDetails
+    export type RelocatePhotosMutationVariables = {data: RelocatePhotosRequest}
+
+    /**
+ * @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.
+ */
+export const useRelocatePhotos = <TError = ProblemDetails,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof relocatePhotos>>, TError,RelocatePhotosMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof relocatePhotos>>,
+        TError,
+        RelocatePhotosMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRelocatePhotosMutationOptions(options), queryClient);
     }
     export const getEmptyPhotoTrashUrl = () => {
 

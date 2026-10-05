@@ -25,11 +25,17 @@ vi.mock('@danbro96/lupira-expo-oidc/oidc', () => {
       super(message);
     }
   }
-  return { RefreshError, decodeJwt: () => ({ email: 'user@test' }) };
+  return {
+    RefreshError,
+    decodeJwt: (t: string) => {
+      const payload = t.split('.')[1];
+      return payload ? JSON.parse(Buffer.from(payload, 'base64url').toString()) : { email: 'user@test' };
+    },
+  };
 });
 
 import { RefreshError } from '@danbro96/lupira-expo-oidc/oidc';
-import { useAuth } from './auth-store';
+import { geoReady, useAuth } from './auth-store';
 
 function seedSession(expiresInMs: number) {
   useAuth.setState({
@@ -167,5 +173,33 @@ describe('session persistence', () => {
 
     await useAuth.getState().refreshIfNeeded({ force: true });
     expect(useAuth.getState().refreshToken).toBe('rt-1');
+  });
+});
+
+describe('geoReady', () => {
+  const jwt = (claims: Record<string, unknown>) =>
+    `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
+
+  it('is true when the audience array includes lupira-geo', () => {
+    expect(geoReady({ authMode: 'oidc', token: jwt({ aud: ['lupira-photos-mobile', 'lupira-geo'] }) })).toBe(true);
+  });
+
+  it('is true when the audience is the lupira-geo string', () => {
+    expect(geoReady({ authMode: 'oidc', token: jwt({ aud: 'lupira-geo' }) })).toBe(true);
+  });
+
+  it('is false without the lupira-geo audience', () => {
+    expect(geoReady({ authMode: 'oidc', token: jwt({ aud: ['lupira-photos-mobile', 'lupira-photo'] }) })).toBe(false);
+    expect(geoReady({ authMode: 'oidc', token: jwt({ aud: 'lupira-photo' }) })).toBe(false);
+    expect(geoReady({ authMode: 'oidc', token: jwt({}) })).toBe(false);
+  });
+
+  it('is false with no token or an undecodable one', () => {
+    expect(geoReady({ authMode: 'oidc', token: null })).toBe(false);
+    expect(geoReady({ authMode: 'oidc', token: 'not-a-jwt' })).toBe(false);
+  });
+
+  it('is true in dev mode without a token', () => {
+    expect(geoReady({ authMode: 'dev', token: null })).toBe(true);
   });
 });

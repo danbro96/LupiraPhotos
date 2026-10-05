@@ -25,12 +25,12 @@ describe('generated client', () => {
   // Anything not under a cluster prefix is an endpoint the BFF declares itself, which is how one
   // migrates off the proxy.
   it('routes every proxied key through a cluster prefix', () => {
-    const prefixes = ['/api/', '/photo-api/'];
+    const prefixes = ['/api/', '/geo-api/', '/photo-api/'];
     expect(keys.filter((k) => !prefixes.some((p) => k.startsWith(p)))).toEqual(['/auth/user']);
   });
 
   it('generates both flavours over one set of models', () => {
-    const tags = ['cal', 'lupira-photos-bff', 'photo'];
+    const tags = ['cal', 'geo', 'lupira-photos-bff', 'photo'];
     for (const dir of ['query', 'fetch']) {
       // Directories only: orval also writes an index.ts barrel beside them.
       const entries = readdirSync(join(root, dir), { withFileTypes: true });
