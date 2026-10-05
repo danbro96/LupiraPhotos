@@ -1,16 +1,16 @@
 import { linkedMessage, linkPhotosTitle, PHOTO_TEXT } from '@danbro96/lupira-domain-photos/photoLinks';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
-import { List, Portal, Text } from 'react-native-paper';
+import { ScrollView, StyleSheet } from 'react-native';
+import { List, Text } from 'react-native-paper';
 import { fmtWhen } from '@danbro96/lupira-domain-core/time';
 import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
-import { SCRIM } from '@danbro96/lupira-tokens-core/color';
+import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { linkPhotosToEvent, unlinkPhotosFromEvent, useLinkCandidates, usePhotoEventLinks } from '../../state/usePhotoEventLinks';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
-/** One picker for linking a single photo or a selection, in the same sheet shape as the filters. */
+/** One picker for linking a single photo or a selection, in the shared bottom sheet. */
 export function LinkEventSheet({ photos, onDismiss, onLinked }: {
   photos: readonly { id: string; takenAt: string }[];
   onDismiss: () => void;
@@ -37,13 +37,8 @@ export function LinkEventSheet({ photos, onDismiss, onLinked }: {
   };
 
   return (
-    <Portal>
-      <Pressable style={styles.backdrop} onPress={busy ? undefined : onDismiss}>
-        <Pressable style={[styles.sheet, { backgroundColor: c.surface }]}>
+    <Sheet title={linkPhotosTitle(photos.length)} onDismiss={busy ? noop : onDismiss}>
           <ScrollView>
-            <Text style={[styles.title, { color: c.text }]}>
-              {linkPhotosTitle(photos.length)}
-            </Text>
             {isLoading && <Text style={[styles.muted, { color: c.textMuted }]}>Looking…</Text>}
             {!isLoading && (candidates ?? []).length === 0 && (
               <Text style={[styles.muted, { color: c.textMuted }]}>{PHOTO_TEXT.noEventsAround}</Text>
@@ -59,15 +54,12 @@ export function LinkEventSheet({ photos, onDismiss, onLinked }: {
               />
             ))}
           </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Portal>
+    </Sheet>
   );
 }
 
+const noop = () => {};
+
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: SCRIM.backdrop },
-  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, maxHeight: '80%' },
-  title: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   muted: { fontSize: 13, marginVertical: 8 },
 });

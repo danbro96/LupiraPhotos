@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
-import { List, Portal, Text } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet } from 'react-native';
+import { List, Text } from 'react-native-paper';
 import { matchTimeline, PHOTO_SEARCH, type DayRange, type TimelineYear } from '@lupira/photos-domain/photoTimeline';
 import { fmtWhen } from '@danbro96/lupira-domain-core/time';
 import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
-import { SCRIM } from '@danbro96/lupira-tokens-core/color';
+import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import { useEventSearch } from '../../state/usePhotoEventLinks';
 import { usePlaceSuggestions } from '../../state/usePhotoLibrary';
 import { Input } from '../components/Input';
@@ -22,7 +21,6 @@ export function PhotoSearchSheet({ timeline, onDate, onEvent, onPlace, onDismiss
   onDismiss: () => void;
 }) {
   const c = useColors();
-  const insets = useSafeAreaInsets();
   const [q, setQ] = useState('');
   const term = q.trim();
   const dates = term.length >= PHOTO_SEARCH.minQuery ? matchTimeline(timeline, term, PHOTO_SEARCH.dates) : [];
@@ -35,9 +33,7 @@ export function PhotoSearchSheet({ timeline, onDate, onEvent, onPlace, onDismiss
   };
 
   return (
-    <Portal>
-      <Pressable style={styles.backdrop} onPress={onDismiss}>
-        <Pressable style={[styles.sheet, { backgroundColor: c.surface, paddingTop: insets.top + 8 }]}>
+    <Sheet anchor="top" onDismiss={onDismiss}>
           <Input
             label="Event, place or month"
             autoFocus
@@ -88,14 +84,10 @@ export function PhotoSearchSheet({ timeline, onDate, onEvent, onPlace, onDismiss
               <Text style={[styles.hint, { color: c.textMuted }]}>Try “midsummer”, “Visby” or “july 2024”.</Text>
             )}
           </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Portal>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-start', backgroundColor: SCRIM.backdrop },
-  sheet: { borderBottomLeftRadius: 16, borderBottomRightRadius: 16, paddingHorizontal: 16, paddingBottom: 8, maxHeight: '75%' },
   hint: { fontSize: 13, marginVertical: 12 },
 });

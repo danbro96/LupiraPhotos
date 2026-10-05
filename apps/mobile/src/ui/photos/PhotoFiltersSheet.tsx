@@ -1,15 +1,15 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Chip, Portal, Text } from 'react-native-paper';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Chip, Text } from 'react-native-paper';
 import type { AssetKind, AssetStatus } from '@lupira/photos-api/models';
-import { SCRIM } from '@danbro96/lupira-tokens-core/color';
 import {
   fmtMonth, fmtPhotoRange, monthRange, type TimelineYear, wholeSpan, yearRange,
 } from '@lupira/photos-domain/photoTimeline';
+import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import type { PhotoQueryFilters } from '../../state/usePhotoLibrary';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
-/** Sort and filter controls, in the same Portal-and-backdrop sheet shape as the map's layer sheet. */
+/** Sort and filter controls in the shared bottom sheet. */
 export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onDismiss }: {
   filters: PhotoQueryFilters;
   timeline: TimelineYear[];
@@ -28,12 +28,8 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
   const clearRange = { from: undefined, to: undefined };
 
   return (
-    <Portal>
-      <Pressable style={styles.backdrop} onPress={onDismiss}>
-        <Pressable style={[styles.sheet, { backgroundColor: c.surface }]}>
+    <Sheet title="Photos" onDismiss={onDismiss}>
           <ScrollView>
-            <Text style={[styles.title, { color: c.text }]}>Photos</Text>
-
             <Text style={[styles.label, { color: c.textMuted }]}>Show</Text>
             <View style={styles.row}>
               <Chip compact selected={!filters.trashed} showSelectedCheck
@@ -135,16 +131,11 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
               <Chip compact icon={ICONS.close} onPress={() => onChange({ sort: filters.sort })}>Clear filters</Chip>
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Portal>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: SCRIM.backdrop },
-  sheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, maxHeight: '80%' },
-  title: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
   label: { fontSize: 12, marginTop: 12, marginBottom: 4 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   subRow: { marginTop: 8 },

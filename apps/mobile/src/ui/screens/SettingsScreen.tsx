@@ -1,27 +1,28 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Divider, List, Switch, Text } from 'react-native-paper';
+import { ScrollView } from 'react-native';
+import { List, Switch } from 'react-native-paper';
 import { APP_VERSION } from '../../config';
 import { UPDATE_LABEL } from '@danbro96/lupira-expo-diagnostics/buildInfo';
 import { useAuth } from '../../state/auth-store';
 import { usePhotoBackup } from '../../state/photo-backup-store';
 import { usePrefs } from '../../state/prefs-store';
 import { usePhotoBackupStatus } from '../../sync/photoBackupStatus';
-import { Button } from '@danbro96/lupira-expo-paper/components/Button';
+import { IdentityHeader } from '@danbro96/lupira-expo-paper/components/IdentityHeader';
+import { VersionLine } from '@danbro96/lupira-expo-paper/components/VersionLine';
 import { ICONS } from '../icons';
 import type { RootStackParamList } from '../navigation/types';
-import { spacing, useColors } from '../theme';
+import { useColors } from '../theme';
 
 const join = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(' · ');
 
-/** An index, not a form: one row per area with its state in the description, each opening its own screen —
- *  the sibling apps' pattern. Something that needs you (a failed upload) shows here in the warning colour,
- *  so nothing has to be opened to find it. Developer tooling stays behind the debug switch. */
+/** Identity, then one row per area with its state in the description, each opening its own screen. Something
+ *  that needs you (a failed upload) shows in the warning colour, so nothing has to be opened to find it.
+ *  Developer tooling stays behind the debug switch. */
 export function SettingsScreen() {
   const c = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { authMode, user, token } = useAuth();
+  const { authMode, user } = useAuth();
   const prefs = usePrefs();
   const photos = usePhotoBackup();
   const photoStatus = usePhotoBackupStatus();
@@ -39,16 +40,13 @@ export function SettingsScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <List.Item
-        title={authMode === 'dev' ? 'Dev auto-auth' : user?.name ?? user?.sub ?? 'Signed out'}
-        description={authMode === 'dev' ? 'No sign-in' : user?.name ? user.sub : undefined}
-        left={icon(ICONS.account)}
-        right={() => (token !== null
-          ? <Button title="Sign out" variant="text" onPress={() => void useAuth.getState().clearSession()} />
-          : null)}
+    <ScrollView>
+      <IdentityHeader
+        name={authMode === 'dev' ? 'Dev auto-auth' : user?.name ?? user?.sub ?? 'Signed out'}
+        sub={authMode === 'dev' ? 'No sign-in' : user?.name ? user.sub : undefined}
       />
-      <Divider />
+
+      <List.Subheader>Backup</List.Subheader>
       <List.Item
         title="Photo backup"
         description={photo}
@@ -57,7 +55,8 @@ export function SettingsScreen() {
         right={chevron}
         onPress={() => navigation.navigate('PhotoSettings')}
       />
-      <Divider />
+
+      <List.Subheader>Developer</List.Subheader>
       <List.Item
         title="Enable debug"
         description="Developer tools and the on-device log"
@@ -73,12 +72,9 @@ export function SettingsScreen() {
       {prefs.debugEnabled && (
         <List.Item title="Developer options" left={icon(ICONS.tune)} right={chevron} onPress={() => navigation.navigate('Developer')} />
       )}
-      <Text style={[styles.version, { color: c.textSubtle }]}>Lupira Photos {APP_VERSION} · {UPDATE_LABEL}</Text>
+
+      <List.Subheader>About</List.Subheader>
+      <VersionLine app="Lupira Photos" version={APP_VERSION} updateLabel={UPDATE_LABEL} />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { paddingVertical: spacing.sm },
-  version: { fontSize: 12, textAlign: 'center', paddingVertical: spacing.lg },
-});

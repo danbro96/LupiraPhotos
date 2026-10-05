@@ -4,6 +4,8 @@ import { fmtDateTime } from '@danbro96/lupira-domain-core/time';
 import { Image } from 'expo-image';
 import { memo, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, useWindowDimensions, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToastClearance } from '@danbro96/lupira-expo-paper/components/ToastHost';
 import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Button, IconButton, List, Menu, Text } from 'react-native-paper';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -39,6 +41,9 @@ export function PhotoViewerScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'PhotoViewer'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const confirm = useConfirm();
+  const insets = useSafeAreaInsets();
+  const [barHeight, setBarHeight] = useState(0);
+  useToastClearance(barHeight > 0 ? barHeight + insets.bottom : 0);
   const { photoId, filters } = route.params;
 
   const { items, hasNextPage, fetchNextPage, isFetchingNextPage } = usePhotoLibrary(filters ?? DEFAULT_PHOTO_FILTERS);
@@ -188,7 +193,7 @@ export function PhotoViewerScreen() {
         </ScrollView>
       )}
 
-      <View style={[styles.actions, { borderTopColor: c.divider, backgroundColor: c.bg }]}>
+      <View onLayout={(e) => setBarHeight(e.nativeEvent.layout.height)} style={[styles.actions, { borderTopColor: c.divider, backgroundColor: c.bg }]}>
         <IconButton
           icon={ICONS.info}
           selected={infoOpen}

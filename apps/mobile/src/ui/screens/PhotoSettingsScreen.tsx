@@ -5,7 +5,8 @@ import { usePhotoBackupStatus } from '../../sync/photoBackupStatus';
 import { retryParkedPhotos, runPhotoBackup } from '../../sync/photoUploader';
 import { useConfirm } from '@danbro96/lupira-expo-paper/components/ConfirmDialog';
 import { DateField } from '../components/DateField';
-import { SettingsAction, SettingsNote } from '../components/SettingsText';
+import { SettingsAction } from '@danbro96/lupira-expo-paper/components/SettingsAction';
+import { SettingsNote } from '@danbro96/lupira-expo-paper/components/SettingsNote';
 import { spacing, useColors } from '../theme';
 
 export function PhotoSettingsScreen() {

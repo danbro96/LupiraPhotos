@@ -1,12 +1,13 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../../state/auth-store';
-import { SettingsButton } from '@danbro96/lupira-expo-paper/components/SettingsButton';
+import { useStackScreenOptions } from '@danbro96/lupira-expo-paper/hooks/useStackScreenOptions';
 import { DebugLogScreen } from '@danbro96/lupira-expo-diagnostics/DebugLogScreen';
 import { DeveloperScreen } from '../screens/DeveloperScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { PhotosScreen } from '../screens/PhotosScreen';
 import { PhotoViewerScreen } from '../screens/PhotoViewerScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { AccountMenu } from '../components/AccountMenu';
 import { PhotoSettingsScreen } from '../screens/PhotoSettingsScreen';
 import type { RootStackParamList } from './types';
 
@@ -15,9 +16,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootStack() {
   const authed = useAuth((s) => s.authMode === 'dev' || s.token !== null);
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={useStackScreenOptions()}>
       {authed ? (
-        <Stack.Screen name="Photos" component={PhotosScreen} options={{ title: 'Photos', headerRight: () => <SettingsButton /> }} />
+        <Stack.Screen name="Photos" component={PhotosScreen} options={{ title: 'Photos', headerRight: () => <AccountMenu /> }} />
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       )}
