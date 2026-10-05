@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const PERSISTED = new Set(['list', 'detail', 'stats', 'places']);
+const PERSISTED = new Set(['list', 'detail', 'stats', 'places', 'saved-places']);
 
 const isPersisted = (query: Query) =>
   query.queryKey[0] === 'photos' && PERSISTED.has(String(query.queryKey[1])) && defaultShouldDehydrateQuery(query);

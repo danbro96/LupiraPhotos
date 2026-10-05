@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Chip, Text } from 'react-native-paper';
 import type { AssetKind, AssetStatus } from '@lupira/photos-api/models';
@@ -5,9 +6,11 @@ import {
   fmtMonth, fmtPhotoRange, monthRange, type TimelineYear, wholeSpan, yearRange,
 } from '@lupira/photos-domain/photoTimeline';
 import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
+import { useSavedPlaces } from '../../state/useGeoPlaces';
 import type { PhotoQueryFilters } from '../../state/usePhotoLibrary';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
+import { PlacesSheet } from './PlacesSheet';
 
 /** Sort and filter controls in the shared bottom sheet. */
 export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onDismiss }: {
@@ -18,9 +21,14 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
   onDismiss: () => void;
 }) {
   const c = useColors();
+  const { data: saved } = useSavedPlaces();
+  const [placesOpen, setPlacesOpen] = useState(false);
   const set = (patch: Partial<PhotoQueryFilters>) => onChange({ ...filters, ...patch });
   const toggle = <K extends keyof PhotoQueryFilters>(key: K, value: PhotoQueryFilters[K]) =>
     set({ [key]: filters[key] === value ? undefined : value } as Partial<PhotoQueryFilters>);
+
+  const toggleLocated = (value: boolean) =>
+    set({ located: filters.located === value ? undefined : value, near: undefined });
 
   const span = filters.from ? wholeSpan(filters.from, filters.to ?? filters.from) : null;
   const openYear = span?.kind === 'year' ? span.year : span?.kind === 'month' ? span.key.slice(0, 4) : null;
@@ -28,6 +36,7 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
   const clearRange = { from: undefined, to: undefined };
 
   return (
+    <>
     <Sheet title="Photos" onDismiss={onDismiss}>
           <ScrollView>
             <Text style={[styles.label, { color: c.textMuted }]}>Show</Text>
@@ -101,11 +110,24 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
             <Text style={[styles.label, { color: c.textMuted }]}>Location</Text>
             <View style={styles.row}>
               <Chip compact selected={filters.located === true} showSelectedCheck
-                onPress={() => toggle('located', true)}>Has a place</Chip>
+                onPress={() => toggleLocated(true)}>Has a place</Chip>
               {/* The only way to see photos the map can't show at all. */}
               <Chip compact selected={filters.located === false} showSelectedCheck
-                onPress={() => toggle('located', false)}>No location</Chip>
+                onPress={() => toggleLocated(false)}>No location</Chip>
+              <Chip compact icon={ICONS.place} onPress={() => setPlacesOpen(true)}>Places…</Chip>
             </View>
+
+            {filters.near && (
+              <>
+                <Text style={[styles.label, { color: c.textMuted }]}>Around</Text>
+                <View style={styles.row}>
+                  <Chip compact icon={ICONS.place} selected showSelectedCheck={false}
+                    onPress={() => set({ near: undefined })} onClose={() => set({ near: undefined })}>
+                    {saved?.find((s) => s.id === filters.near)?.label ?? 'A saved place'}
+                  </Chip>
+                </View>
+              </>
+            )}
 
             {filters.place && (
               <>
@@ -132,6 +154,16 @@ export function PhotoFiltersSheet({ filters, timeline, eventTitle, onChange, onD
             </View>
           </ScrollView>
     </Sheet>
+    {placesOpen && (
+      <PlacesSheet
+        onPick={(label) => {
+          set({ place: label, near: undefined });
+          setPlacesOpen(false);
+        }}
+        onDismiss={() => setPlacesOpen(false)}
+      />
+    )}
+    </>
   );
 }
 

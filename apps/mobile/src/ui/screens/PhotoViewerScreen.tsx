@@ -13,10 +13,12 @@ import { scheduleOnRN } from 'react-native-worklets';
 import type { PhotoListItemDto } from '@lupira/photos-api/models';
 import { reprocessPhoto } from '@lupira/photos-api/fetch/photo';
 import { formatCoords } from '@danbro96/lupira-domain-places/places';
-import { fmtBytes, fmtDimensions, fmtDuration, geotagLabel, inTrashLine, originalIsViewable, purgeWarning } from '@lupira/photos-domain/photoFormat';
+import { fmtBytes, fmtDimensions, fmtDuration, geotagLabel, gpsRejectionLabel, inTrashLine, originalIsViewable, purgeWarning } from '@lupira/photos-domain/photoFormat';
 import { PHOTO_TEXT } from '@danbro96/lupira-domain-photos/photoLinks';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
+import { placeHeading } from '../../domain/geoPlaces';
 import { purgePhotos, restorePhotos, trashPhotos } from '../../state/photoActions';
+import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { DEFAULT_PHOTO_FILTERS, usePhoto, usePhotoLibrary } from '../../state/usePhotoLibrary';
 import { saveOriginalToPhone } from '../../sync/photoUploader';
 import { invalidatePhotos } from '../../state/queryClient';
@@ -25,6 +27,7 @@ import { useConfirm } from '@danbro96/lupira-expo-paper/components/ConfirmDialog
 import { LinkEventSheet } from '../photos/LinkEventSheet';
 import { originalCacheKey, thumbCacheKey } from '../photos/imageCache';
 import { PhotoEventLinks } from '../photos/PhotoEventLinks';
+import { SetLocationSheet } from '../photos/SetLocationSheet';
 import { useColors } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 import { ICONS } from '../icons';
@@ -51,6 +54,7 @@ export function PhotoViewerScreen() {
   const [infoOpen, setInfoOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [linking, setLinking] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -230,12 +234,24 @@ export function PhotoViewerScreen() {
           ) : (
             <Menu.Item leadingIcon={ICONS.delete} title="Move to trash" disabled={busy} onPress={() => void onTrash()} />
           )}
+          {!current.trashedAt && (
+            <Menu.Item
+              leadingIcon={ICONS.editLocation}
+              title="Set location…"
+              disabled={busy}
+              onPress={() => {
+                setMenuOpen(false);
+                setLocating(true);
+              }}
+            />
+          )}
         </Menu>
       </View>
 
       {linking && (
         <LinkEventSheet photos={[{ id: current.id, takenAt: current.takenAt }]} onDismiss={() => setLinking(false)} />
       )}
+      {locating && <SetLocationSheet photos={[current]} onDismiss={() => setLocating(false)} />}
     </View>
   );
 }
@@ -364,10 +380,13 @@ function Metadata({ photo, onReprocess, busy }: { photo: PhotoListItemDto; onRep
   const c = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const dims = fmtDimensions(photo.width, photo.height);
+  const { data: saved } = useSavedPlaces();
+  const heading = placeHeading(photo, saved ?? []);
 
   return (
     <>
-      <Text style={[styles.title, { color: c.text }]}>{photo.placeLabel ?? 'Unknown place'}</Text>
+      <Text style={[styles.title, { color: c.text }]}>{heading.title}</Text>
+      {heading.address && <Text style={[styles.detail, { color: c.textMuted }]}>{heading.address}</Text>}
       <Text style={[styles.detail, { color: c.textMuted }]}>{fmtDateTime(new Date(photo.takenAt))}</Text>
       {photo.purgesAt && (
         <Text style={[styles.detail, { color: c.warning }]}>
@@ -388,6 +407,9 @@ function Metadata({ photo, onReprocess, busy }: { photo: PhotoListItemDto; onRep
           ? `${formatCoords(photo.latitude, photo.longitude)} · ${geotagLabel(photo.geotagSource)}`
           : PHOTO_TEXT.noLocation}
       </Text>
+      {photo.gpsRejection && (
+        <Text style={[styles.detail, { color: c.warning }]}>{gpsRejectionLabel(photo.gpsRejection.reason)}</Text>
+      )}
 
       {photo.duplicateOfId != null && (
         <>

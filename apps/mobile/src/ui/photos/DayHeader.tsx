@@ -1,25 +1,29 @@
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Chip, IconButton, Text } from 'react-native-paper';
-import { linkedEventIds, topPlaces } from '@lupira/photos-domain/photoFormat';
+import { linkedEventIds } from '@lupira/photos-domain/photoFormat';
+import { dayPlaces } from '../../domain/geoPlaces';
+import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { useLinkedEvents } from '../../state/usePhotoEventLinks';
 import type { PhotoDay } from '../../state/usePhotoLibrary';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
 /** A day's date, where it was and what it was — each a way to narrow the grid to it. */
-export const DayHeader = memo(function DayHeader({ day, links, selecting, allSelected, onToggleDay, onPlace, onEvent, onMap }: {
+export const DayHeader = memo(function DayHeader({ day, links, selecting, allSelected, onToggleDay, onPlace, onNear, onEvent, onMap }: {
   day: PhotoDay;
   links: ReadonlyMap<string, readonly string[]>;
   selecting: boolean;
   allSelected: boolean;
   onToggleDay: (day: PhotoDay) => void;
   onPlace: (label: string) => void;
+  onNear: (savedPlaceId: string) => void;
   onEvent: (eventId: string) => void;
   onMap: (at: { lon: number; lat: number }) => void;
 }) {
   const c = useColors();
-  const places = topPlaces(day.items, 2);
+  const { data: saved } = useSavedPlaces();
+  const places = dayPlaces(day.items, saved ?? [], 2);
   const events = useLinkedEvents(linkedEventIds(day.items.map((p) => p.id), links).slice(0, 3));
   const located = day.items.find((p) => p.latitude != null && p.longitude != null);
 
@@ -27,8 +31,8 @@ export const DayHeader = memo(function DayHeader({ day, links, selecting, allSel
     <View style={[styles.root, { backgroundColor: c.bg }]}>
       <View style={styles.line}>
         <Text style={[styles.label, { color: c.textMuted }]}>{day.label}</Text>
-        {places.map((label) => (
-          <Pressable key={label} hitSlop={6} onPress={() => onPlace(label)} style={styles.place}>
+        {places.map(({ label, near }) => (
+          <Pressable key={label} hitSlop={6} onPress={() => (near ? onNear(near) : onPlace(label))} style={styles.place}>
             <Text numberOfLines={1} style={[styles.placeText, { color: c.primary }]}>{label}</Text>
           </Pressable>
         ))}

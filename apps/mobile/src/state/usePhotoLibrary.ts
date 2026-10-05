@@ -5,6 +5,8 @@ import { filterPhotos } from '@lupira/photos-domain/photoFilter';
 import { groupByDay as groupDays, photoDayLabel, THUMB_SAFE_STALE_MS, type DayGroup } from '@lupira/photos-domain/photoFormat';
 import { dayEndIso, dayStartIso } from '@danbro96/lupira-domain-core/time';
 import { PHOTO_SEARCH } from '@lupira/photos-domain/photoTimeline';
+import { nearBbox, PLACE_BROWSE_LIMIT } from '../domain/geoPlaces';
+import { useSavedPlaces } from './useGeoPlaces';
 import { useEventPhotoQuery } from './usePhotoEventLinks';
 import { useOnline } from './useOnline';
 
@@ -20,6 +22,8 @@ export type PhotoQueryFilters = {
   status?: AssetStatus;
   located?: boolean;
   place?: string;
+  /** A saved place id — photos within a short distance of it, sent as a bounding box. */
+  near?: string;
   /** Local day bounds, 'yyyy-MM-dd'. */
   from?: string;
   to?: string;
@@ -32,9 +36,10 @@ export type PhotoQueryFilters = {
 export const DEFAULT_PHOTO_FILTERS: PhotoQueryFilters = { sort: 'TakenAtDesc' };
 
 /** The day bounds are local calendar days; the endpoint takes instants. */
-function listParams({ from, to, event: _event, ...rest }: PhotoQueryFilters): ListPhotosParams {
+function listParams({ from, to, event: _event, near: _near, ...rest }: PhotoQueryFilters, bbox?: string | null): ListPhotosParams {
   return {
     ...rest,
+    bbox: bbox ?? undefined,
     from: from ? dayStartIso(from) : undefined,
     to: to ? dayEndIso(to) : undefined,
   };
@@ -43,14 +48,17 @@ function listParams({ from, to, event: _event, ...rest }: PhotoQueryFilters): Li
 export function usePhotoLibrary(filters: PhotoQueryFilters) {
   const online = useOnline();
   const restoring = useIsRestoring();
+  const savedPlaces = useSavedPlaces();
+  const bbox = filters.near ? nearBbox(filters.near, savedPlaces.data ?? []) : null;
+  const resolvingNear = !!filters.near && bbox === null && savedPlaces.isLoading;
 
   const query = useInfiniteQuery({
     queryKey: ['photos', 'list', filters],
-    enabled: online && !filters.event,
+    enabled: online && !filters.event && (!filters.near || bbox !== null),
     staleTime: THUMB_SAFE_STALE_MS,
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
-      const r = await listPhotos({ ...listParams(filters), limit: PHOTO_PAGE_SIZE, cursor: pageParam });
+      const r = await listPhotos({ ...listParams(filters, bbox), limit: PHOTO_PAGE_SIZE, cursor: pageParam });
       if (r.status !== 200) throw new Error(`photos ${r.status}`);
       return r.data;
     },
@@ -81,7 +89,7 @@ export function usePhotoLibrary(filters: PhotoQueryFilters) {
   return {
     items,
     offline,
-    isLoading: query.isLoading || restoring,
+    isLoading: query.isLoading || restoring || resolvingNear,
     isRefetching: query.isRefetching,
     error: query.error,
     hasNextPage: query.hasNextPage,
@@ -124,6 +132,22 @@ export type PhotoDay = DayGroup<PhotoListItemDto>;
 
 export function groupByDay(items: PhotoListItemDto[]): PhotoDay[] {
   return groupDays(items, photoDayLabel);
+}
+
+/** The most photographed places, narrowed by a search — the endpoint returns at most `PLACE_BROWSE_LIMIT`. */
+export function usePhotoPlaces(query: string) {
+  const online = useOnline();
+  const term = query.trim();
+  return useQuery({
+    queryKey: ['photos', 'places', 'top', term],
+    enabled: online,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const r = await listPhotoPlaces({ q: term || undefined, limit: PLACE_BROWSE_LIMIT });
+      if (r.status !== 200) throw new Error(`photo places ${r.status}`);
+      return r.data;
+    },
+  });
 }
 
 /** Place names in the library matching a search, most photographed first. */

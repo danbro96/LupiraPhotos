@@ -11,11 +11,13 @@ import { fmtPhotoRange, photoTimeline, yearRange } from '@lupira/photos-domain/p
 import type { PhotoListItemDto } from '@lupira/photos-api/models';
 import { photoEmptyText } from '@lupira/photos-domain/photoFilter';
 import { SCRIM } from '@danbro96/lupira-tokens-core/color';
+import { aroundPlaces } from '../../domain/geoPlaces';
 import { photoGrid, type PhotoGridEntry } from '@lupira/photos-domain/photoGrid';
 import { hapticSelection } from '@danbro96/lupira-expo-feedback/haptics';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { usePhotoBackup } from '../../state/photo-backup-store';
 import { emptyTrash, purgePhotos, restorePhotos, trashPhotos, type Outcome } from '../../state/photoActions';
+import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { linkPhotosToEvent, unlinkPhotosFromEvent, useLinkedEvents, usePhotoEventLinks } from '../../state/usePhotoEventLinks';
 import { DEFAULT_PHOTO_FILTERS, groupByDay, usePhotoLibrary, usePhotoStats, type PhotoDay, type PhotoQueryFilters } from '../../state/usePhotoLibrary';
 import { usePhotoBackupStatus } from '../../sync/photoBackupStatus';
@@ -30,6 +32,7 @@ import { DayHeader } from '../photos/DayHeader';
 import { LinkEventSheet } from '../photos/LinkEventSheet';
 import { PhotoFiltersSheet } from '../photos/PhotoFiltersSheet';
 import { PhotoSearchSheet } from '../photos/PhotoSearchSheet';
+import { SetLocationSheet } from '../photos/SetLocationSheet';
 import type { RootStackParamList } from '../navigation/types';
 import { openSibling } from '../openSibling';
 import { ICONS } from '../icons';
@@ -56,6 +59,7 @@ export function PhotosScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(NO_SELECTION);
   const [linking, setLinking] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [gridWidth, setGridWidth] = useState(0);
 
   // A filter change can take selected photos out of view, and acting on unseen photos would surprise.
@@ -84,6 +88,9 @@ export function PhotosScreen() {
   const links = usePhotoEventLinks();
   const { data: stats } = usePhotoStats();
   const [eventTitle] = useLinkedEvents(filters.event ? [filters.event] : []).map((e) => e.title);
+  const { data: savedPlaces } = useSavedPlaces();
+  const around = aroundPlaces(savedPlaces ?? []);
+  const nearLabel = savedPlaces?.find((s) => s.id === filters.near)?.label;
 
   const { entries, headerIndices } = photoGrid(groupByDay(items), COLUMNS);
   const tile = (gridWidth - GAP * (COLUMNS + 1)) / COLUMNS;
@@ -103,6 +110,7 @@ export function PhotosScreen() {
     filters.kind,
     filters.located === true ? 'Has a place' : filters.located === false ? 'No location' : null,
     filters.place ? `“${filters.place}”` : null,
+    filters.near ? `Around ${nearLabel ?? 'a saved place'}` : null,
     filters.status,
     filters.from ? fmtPhotoRange(filters.from, filters.to) : null,
   ].filter(Boolean).join(' · ');
@@ -181,7 +189,8 @@ export function PhotosScreen() {
   const onEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
   };
-  const onPlace = (place: string) => applyFilters((f) => ({ ...f, place }));
+  const onPlace = (place: string) => applyFilters((f) => ({ ...f, place, near: undefined }));
+  const onNear = (near: string) => applyFilters((f) => ({ ...f, near, place: undefined, located: undefined }));
   const onDayMap = (at: { lon: number; lat: number }) => openSibling((l) => l.mapsAtUrl({ ...at, layers: ['photos'] }));
   const renderItem = ({ item }: { item: Entry }) => item.kind === 'header'
     ? (
@@ -192,6 +201,7 @@ export function PhotosScreen() {
         allSelected={item.day.items.every((p) => selected.has(p.id))}
         onToggleDay={toggleDay}
         onPlace={onPlace}
+        onNear={onNear}
         onEvent={onShowEvent}
         onMap={onDayMap}
       />
@@ -217,7 +227,7 @@ export function PhotosScreen() {
   if (isLoading) return <Centered text="Loading…" />;
   if (items.length === 0 && (offline || error)) return <Centered text="Photos need a connection." />;
 
-  const emptyText = photoEmptyText(filters);
+  const emptyText = filters.near && !filters.trashed ? 'No photos match these filters.' : photoEmptyText(filters);
 
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
@@ -234,6 +244,7 @@ export function PhotosScreen() {
             ) : (
               <>
                 <IconButton icon={ICONS.link} onPress={() => setLinking(true)} accessibilityLabel="Link to event" />
+                <IconButton icon={ICONS.editLocation} onPress={() => setLocating(true)} accessibilityLabel="Set location" />
                 {filters.event && (
                   <IconButton icon={ICONS.linkOff} onPress={() => void onUnlinkSelected()} accessibilityLabel="Remove from event" />
                 )}
@@ -249,6 +260,14 @@ export function PhotosScreen() {
             <Chip compact icon={ICONS.tune} onPress={() => setSheetOpen(true)}>
               {filterSummary || 'All photos'}
             </Chip>
+            {!filters.trashed && around.map((place) => (
+              <Chip key={place.id} compact icon={ICONS.place} selected={filters.near === place.id}
+                onPress={() => filters.near === place.id
+                  ? applyFilters((f) => ({ ...f, near: undefined }))
+                  : onNear(place.id)}>
+                {`Around ${place.label}`}
+              </Chip>
+            ))}
             {filters.trashed && items.length > 0 && (
               <Chip compact icon={ICONS.deleteForever} onPress={() => void onEmptyTrash()}>Empty trash</Chip>
             )}
@@ -314,6 +333,13 @@ export function PhotosScreen() {
           photos={selectedPhotos}
           onDismiss={() => setLinking(false)}
           onLinked={() => setSelected(NO_SELECTION)}
+        />
+      )}
+      {locating && (
+        <SetLocationSheet
+          photos={selectedPhotos}
+          onDismiss={() => setLocating(false)}
+          onDone={() => setSelected(NO_SELECTION)}
         />
       )}
     </View>

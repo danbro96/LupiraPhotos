@@ -27,6 +27,7 @@ export const ICONS = {
   delete: 'delete',
   deleteForever: 'delete-forever',
   download: 'file-download',
+  editLocation: 'edit-location-alt',
   email: 'email',
   event: 'event',
   expand: 'expand-more',
