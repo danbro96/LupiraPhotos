@@ -3,7 +3,7 @@ import { migrate } from '@danbro96/lupira-expo-sqlite/migrate';
 import type { Db } from '@danbro96/lupira-expo-sqlite/types';
 import { MIGRATIONS } from './schema';
 
-const open = expoDb('lupira-photos.db');
+const open = expoDb('lupira-photos.db', { serializeStatements: true });
 
 let ready: Promise<Db> | null = null;
 
