@@ -24,6 +24,10 @@ import { usePhotoBackupStatus } from '../../sync/photoBackupStatus';
 import { retryParkedPhotos } from '../../sync/photoUploader';
 import { Centered } from '../components/Centered';
 import { useConfirm } from '@danbro96/lupira-expo-paper/components/ConfirmDialog';
+import { Screen } from '@danbro96/lupira-expo-paper/components/Screen';
+import { StatusBanner } from '@danbro96/lupira-expo-paper/components/StatusBanner';
+import { offlineBannerState } from '@danbro96/lupira-expo-paper/status';
+import { useOnline } from '@danbro96/lupira-expo-query/online';
 import { IndeterminateBar } from '../components/IndeterminateBar';
 import { LetterRail } from '../components/LetterRail';
 import { ScreenToolbar } from '@danbro96/lupira-expo-paper/components/ScreenToolbar';
@@ -54,6 +58,7 @@ export function PhotosScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Photos'>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Photos'>>();
   const confirm = useConfirm();
+  const online = useOnline();
   const [filters, setFilters] = useState<PhotoQueryFilters>(DEFAULT_PHOTO_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -224,13 +229,14 @@ export function PhotosScreen() {
       </View>
     );
 
-  if (isLoading) return <Centered text="Loading…" />;
-  if (items.length === 0 && (offline || error)) return <Centered text="Photos need a connection." />;
+  const banner = <StatusBanner state={offlineBannerState(online)} />;
+  if (isLoading) return <Screen banner={banner}><Centered text="Loading…" /></Screen>;
+  if (items.length === 0 && (offline || error)) return <Screen banner={banner}><Centered text="Photos need a connection." /></Screen>;
 
   const emptyText = filters.near && !filters.trashed ? 'No photos match these filters.' : photoEmptyText(filters);
 
   return (
-    <View style={[styles.root, { backgroundColor: c.bg }]}>
+    <Screen banner={banner}>
       <ScreenToolbar>
         {selecting ? (
           <>
@@ -342,7 +348,7 @@ export function PhotosScreen() {
           onDone={() => setSelected(NO_SELECTION)}
         />
       )}
-    </View>
+    </Screen>
   );
 }
 
@@ -431,7 +437,6 @@ const PhotoTile = memo(function PhotoTile({ photo, size, eventId, selecting, sel
 });
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
   chips: { gap: 8, alignItems: 'center' },
   selectedCount: { flex: 1, fontSize: 16, fontWeight: '600' },
   body: { flex: 1, flexDirection: 'row' },
