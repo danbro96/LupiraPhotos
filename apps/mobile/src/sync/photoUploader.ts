@@ -12,7 +12,7 @@ import * as queue from '../data/photoQueue';
 import { loadBackupSettings } from '../data/photoSettings';
 import { nextAttemptDelayMs, PARK_AFTER_ATTEMPTS } from '@danbro96/lupira-sync-core/backoff';
 import type { PhotoBackupSettings, PhotoQueueRow } from '../domain/photoBackup';
-import { logDebug } from '@danbro96/lupira-expo-diagnostics/log';
+import { detach, logDebug } from '@danbro96/lupira-expo-diagnostics/log';
 import { usePhotoBackupStatus } from './photoBackupStatus';
 
 /** Camera-roll backup: scan MediaStore for assets inside the backup window, then drain the queue by
@@ -155,9 +155,9 @@ async function uploadOne(db: Db, device: string, row: PhotoQueueRow): Promise<vo
 }
 
 /** Foreground triggers: app becomes active, connectivity returns, sign-in completes. The periodic
- *  background tick lives in backgroundTask.ts. */
+ *  background tick lives in state/backgroundTask.ts. */
 export function startPhotoBackup(): () => void {
-  const run = () => void runPhotoBackup().catch((e) => logDebug('photos', `backup pass failed: ${String(e)}`));
+  const run = () => detach(runPhotoBackup(), 'photos:backup');
   const appState = AppState.addEventListener('change', (s) => {
     if (s === 'active') run();
   });

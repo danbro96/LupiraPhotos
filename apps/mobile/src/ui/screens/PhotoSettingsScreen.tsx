@@ -8,6 +8,8 @@ import { DateField } from '../components/DateField';
 import { SettingsAction } from '@danbro96/lupira-expo-paper/components/SettingsAction';
 import { SettingsNote } from '@danbro96/lupira-expo-paper/components/SettingsNote';
 import { spacing, useColors } from '../theme';
+import { toastError } from '@danbro96/lupira-expo-feedback/toast';
+import { detach } from '@danbro96/lupira-expo-diagnostics/log';
 
 export function PhotoSettingsScreen() {
   const c = useColors();
@@ -16,18 +18,18 @@ export function PhotoSettingsScreen() {
   const confirm = useConfirm();
 
   const toggle = (value: boolean) => {
-    void usePhotoBackup.getState().setEnabled(value).then(async (ok) => {
+    usePhotoBackup.getState().setEnabled(value).then(async (ok) => {
       if (!ok) {
         const open = await confirm({
           title: 'Photo permissions needed',
           message: 'Access to photos and videos — including their location data — is required to back them up. Grant it in the system settings and try again.',
           confirmLabel: 'Open app settings',
         });
-        if (open) void Linking.openSettings();
+        if (open) await Linking.openSettings();
         return;
       }
-      if (value) void runPhotoBackup();
-    });
+      if (value) detach(runPhotoBackup(), 'photos:backup');
+    }).catch(() => toastError('Could not change photo backup.'));
   };
 
   return (
@@ -41,14 +43,14 @@ export function PhotoSettingsScreen() {
           <List.Item
             title="Only on Wi-Fi"
             right={() => (
-              <Switch value={photos.settings.wifiOnly} onValueChange={(v) => void usePhotoBackup.getState().setWifiOnly(v)} />
+              <Switch value={photos.settings.wifiOnly} onValueChange={(v) => { usePhotoBackup.getState().setWifiOnly(v).catch(() => toastError('Could not save the setting.')); }} />
             )}
           />
           <View style={styles.row}>
             <Text style={[styles.label, { color: c.text }]}>Back up from</Text>
             <DateField
               value={photos.settings.backupFrom.slice(0, 10)}
-              onChange={(day) => day && void usePhotoBackup.getState().setBackupFrom(new Date(`${day}T00:00:00`).toISOString())}
+              onChange={(day) => { if (day) usePhotoBackup.getState().setBackupFrom(new Date(`${day}T00:00:00`).toISOString()).catch(() => toastError('Could not save the date.')); }}
             />
           </View>
           <SettingsNote>
@@ -59,7 +61,7 @@ export function PhotoSettingsScreen() {
                 : `${status.done} backed up`}
           </SettingsNote>
           {status.parked > 0 && (
-            <SettingsAction onPress={() => void retryParkedPhotos()}>{status.parked} failed — tap to retry</SettingsAction>
+            <SettingsAction onPress={() => { retryParkedPhotos().catch(() => toastError('Could not retry the uploads.')); }}>{status.parked} failed — tap to retry</SettingsAction>
           )}
         </>
       )}

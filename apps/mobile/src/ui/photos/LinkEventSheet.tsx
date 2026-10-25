@@ -29,7 +29,7 @@ export function LinkEventSheet({ photos, onDismiss, onLinked }: {
       toastError('Could not link the photos.');
     } else {
       toast(linkedMessage(photos.length, linked.length), linked.length > 0
-        ? { action: { label: 'Undo', onPress: () => void unlinkPhotosFromEvent(itemId, linked) } }
+        ? { action: { label: 'Undo', onPress: () => { unlinkPhotosFromEvent(itemId, linked).catch(() => toastError('Could not undo.')); } } }
         : undefined);
       onLinked?.();
     }
@@ -50,7 +50,7 @@ export function LinkEventSheet({ photos, onDismiss, onLinked }: {
                 description={fmtWhen(item.start, item.isAllDay)}
                 left={(props) => <List.Icon {...props} icon={ICONS.calendar} />}
                 disabled={busy}
-                onPress={() => void onPick(item.id)}
+                onPress={() => { onPick(item.id).catch(() => toastError('Could not link the photos.')); }}
               />
             ))}
           </ScrollView>

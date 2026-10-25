@@ -32,6 +32,7 @@ import { useColors, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 import { ICONS } from '../icons';
 import { openSibling } from '../openSibling';
+import { detach } from '@danbro96/lupira-expo-diagnostics/log';
 
 const MAX_SCALE = 4;
 
@@ -79,7 +80,7 @@ export function PhotoViewerScreen() {
       toastError('Could not move the photo to trash.');
       return;
     }
-    toast(PHOTO_TEXT.movedToTrash, { action: { label: 'Undo', onPress: () => void restorePhotos([id]) } });
+    toast(PHOTO_TEXT.movedToTrash, { action: { label: 'Undo', onPress: () => { restorePhotos([id]).catch(() => toastError('Could not undo.')); } } });
     navigation.goBack();
   };
 
@@ -160,7 +161,7 @@ export function PhotoViewerScreen() {
     if (next) setCurrentId(next.id);
   };
   const onEndReached = () => {
-    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) detach(fetchNextPage(), 'photos:next-page');
   };
 
   if (pages.length === 0) return <Centered text={isLoading ? 'Loading…' : 'This photo is no longer available.'} />;
@@ -193,7 +194,7 @@ export function PhotoViewerScreen() {
 
       {infoOpen && (
         <ScrollView style={[styles.meta, { borderTopColor: c.divider }]} contentContainerStyle={styles.metaContent}>
-          <Metadata photo={current} onReprocess={() => void onReprocess()} busy={busy} />
+          <Metadata photo={current} onReprocess={() => { onReprocess().catch(() => toastError('Could not queue the photo.')); }} busy={busy} />
         </ScrollView>
       )}
 
@@ -207,7 +208,7 @@ export function PhotoViewerScreen() {
         <IconButton
           icon={ICONS.download}
           disabled={busy || !detail?.originalUrl}
-          onPress={() => void onSave()}
+          onPress={() => { onSave().catch(() => toastError('Could not save the photo.')); }}
           accessibilityLabel="Save to this phone"
         />
         <IconButton
@@ -217,7 +218,7 @@ export function PhotoViewerScreen() {
           accessibilityLabel="Show on the map"
         />
         {current.trashedAt ? (
-          <IconButton icon={ICONS.restore} disabled={busy} onPress={() => void onRestore()} accessibilityLabel="Restore" />
+          <IconButton icon={ICONS.restore} disabled={busy} onPress={() => { onRestore().catch(() => toastError('Could not restore the photo.')); }} accessibilityLabel="Restore" />
         ) : (
           <IconButton icon={ICONS.link} onPress={() => setLinking(true)} accessibilityLabel="Link to event" />
         )}
@@ -227,12 +228,12 @@ export function PhotoViewerScreen() {
           anchor={<IconButton icon={ICONS.more} onPress={() => setMenuOpen(true)} accessibilityLabel="More" />}
         >
           {current.status === 'Failed' && (
-            <Menu.Item leadingIcon={ICONS.schedule} title="Retry processing" disabled={busy} onPress={() => void onReprocess()} />
+            <Menu.Item leadingIcon={ICONS.schedule} title="Retry processing" disabled={busy} onPress={() => { onReprocess().catch(() => toastError('Could not queue the photo.')); }} />
           )}
           {current.trashedAt ? (
-            <Menu.Item leadingIcon={ICONS.deleteForever} title="Delete for good" titleStyle={{ color: c.danger }} disabled={busy} onPress={() => void onPurge()} />
+            <Menu.Item leadingIcon={ICONS.deleteForever} title="Delete for good" titleStyle={{ color: c.danger }} disabled={busy} onPress={() => { onPurge().catch(() => toastError(PHOTO_TEXT.deleteFailed)); }} />
           ) : (
-            <Menu.Item leadingIcon={ICONS.delete} title="Move to trash" disabled={busy} onPress={() => void onTrash()} />
+            <Menu.Item leadingIcon={ICONS.delete} title="Move to trash" disabled={busy} onPress={() => { onTrash().catch(() => toastError('Could not move the photo to trash.')); }} />
           )}
           {!current.trashedAt && (
             <Menu.Item

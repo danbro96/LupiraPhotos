@@ -9,13 +9,14 @@ import { useQueryClient } from '@tanstack/react-query';
  */
 
 /** Photo writes: every gallery query plus the photo↔event edge map, which a link or a delete changes. */
-export function useInvalidatePhotos() {
+export function useInvalidatePhotos(): () => void {
   const queryClient = useQueryClient();
-  return () =>
+  return () => {
     queryClient.invalidateQueries({
       predicate: (q) => {
         const key = String(q.queryKey[0] ?? '');
         return key.startsWith('/photo-api/photos') || key.startsWith('/api/relations/edges');
       },
     });
+  };
 }

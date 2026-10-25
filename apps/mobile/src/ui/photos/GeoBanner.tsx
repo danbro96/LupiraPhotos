@@ -3,6 +3,7 @@ import { Text } from 'react-native-paper';
 import { Button } from '@danbro96/lupira-expo-paper/components/Button';
 import { useAuth } from '../../state/auth-store';
 import { useColors } from '../theme';
+import { toastError } from '@danbro96/lupira-expo-feedback/toast';
 
 /** Place search needs the geo audience, which a session minted before that scope existed does not carry. */
 export function GeoBanner() {
@@ -10,7 +11,7 @@ export function GeoBanner() {
   return (
     <View style={styles.root}>
       <Text style={[styles.text, { color: c.warning }]}>Sign out and in again to search places.</Text>
-      <Button title="Sign out" variant="text" onPress={() => void useAuth.getState().clearSession()} />
+      <Button title="Sign out" variant="text" onPress={() => { useAuth.getState().clearSession().catch(() => toastError('Could not sign out.')); }} />
     </View>
   );
 }

@@ -22,7 +22,7 @@ export function PhotoEventLinks({ photoId, takenAt }: { photoId: string; takenAt
       return;
     }
     toast('Removed from the event', {
-      action: { label: 'Undo', onPress: () => void linkPhotosToEvent(eventId, [photoId], new Map()) },
+      action: { label: 'Undo', onPress: () => { linkPhotosToEvent(eventId, [photoId], new Map()).catch(() => toastError('Could not undo.')); } },
     });
   };
 
@@ -35,7 +35,7 @@ export function PhotoEventLinks({ photoId, takenAt }: { photoId: string; takenAt
         {linked.map((event) => (
           <Chip key={event.id} compact icon={ICONS.calendar}
             onPress={() => openSibling((l) => l.calItemUrl(event.id))}
-            onClose={() => void onRemove(event.id)} closeIconAccessibilityLabel="Remove from event">
+            onClose={() => { onRemove(event.id).catch(() => toastError('Could not remove the link.')); }} closeIconAccessibilityLabel="Remove from event">
             {event.title}
           </Chip>
         ))}

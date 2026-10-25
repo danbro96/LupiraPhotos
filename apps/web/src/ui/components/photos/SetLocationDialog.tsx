@@ -96,7 +96,7 @@ export function SetLocationDialog({ photos, onClose, onApplied }: {
       showSnack('Could not set the location');
       return;
     }
-    showSnack(relocateMessage(done, photos.length), 'success', { label: 'Undo', onPress: () => void onUndo(previous, applied) });
+    showSnack(relocateMessage(done, photos.length), 'success', { label: 'Undo', onPress: () => { onUndo(previous, applied).catch(() => showSnack('Could not undo')); } });
     onApplied?.();
     onClose();
   };
@@ -208,7 +208,7 @@ export function SetLocationDialog({ photos, onClose, onApplied }: {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={busy}>Cancel</Button>
-        <Button variant="contained" onClick={() => void onApply()} disabled={busy || !target || !label.trim()}>Apply</Button>
+        <Button variant="contained" onClick={() => { onApply().catch(() => showSnack('Could not set the location')); }} disabled={busy || !target || !label.trim()}>Apply</Button>
       </DialogActions>
     </Dialog>
   );

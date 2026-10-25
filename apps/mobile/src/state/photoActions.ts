@@ -4,6 +4,7 @@ import { chunk, planUndo, RELOCATE_MAX_IDS, type LocationState, type RelocateTar
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { relocatedMessage } from '../domain/geoPlaces';
 import { invalidatePhotos } from './queryClient';
+import { detach } from '@danbro96/lupira-expo-diagnostics/log';
 
 export type Outcome = { done: number; failed: number };
 
@@ -94,6 +95,6 @@ export async function relocate(items: readonly LocationState[], target: Relocate
   const applied = await sendRelocate(previous.map((p) => p.id), target);
   invalidatePhotos();
   if (applied.length === 0) toastError('Could not set the location.');
-  else toast(relocatedMessage(applied.length, previous.length), { action: { label: 'Undo', onPress: () => void undoRelocate(previous, applied) } });
+  else toast(relocatedMessage(applied.length, previous.length), { action: { label: 'Undo', onPress: () => detach(undoRelocate(previous, applied), 'photos:undo-relocate') } });
   return true;
 }

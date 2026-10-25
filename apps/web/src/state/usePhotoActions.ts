@@ -21,7 +21,7 @@ export function usePhotoActions() {
   const track = <T extends Outcome>(run: () => Promise<T>): Promise<T> => trackPending(run, setPending, invalidate);
 
   const rederiveLater = <T>(result: T): T => {
-    for (const delay of REDERIVE_DELAYS_MS) setTimeout(() => void invalidate(), delay);
+    for (const delay of REDERIVE_DELAYS_MS) setTimeout(invalidate, delay);
     return result;
   };
 
@@ -59,14 +59,14 @@ export function usePhotoActions() {
 async function trackPending<T extends Outcome>(
   run: () => Promise<T>,
   setPending: Dispatch<SetStateAction<number>>,
-  invalidate: () => Promise<void>,
+  invalidate: () => void,
 ): Promise<T> {
   setPending((n) => n + 1);
   try {
     return await run();
   } finally {
     setPending((n) => n - 1);
-    void invalidate();
+    invalidate();
   }
 }
 

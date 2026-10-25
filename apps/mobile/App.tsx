@@ -14,7 +14,7 @@ import { navDark, navLight, paperDark, paperLight } from './src/ui/theme/paperTh
 import { usePhotoBackup } from './src/state/photo-backup-store';
 import { usePrefs } from './src/state/prefs-store';
 import { persistOptions, queryClient } from './src/state/queryClient';
-import { registerBackgroundBackup } from './src/sync/backgroundTask';
+import { registerBackgroundBackup } from './src/state/backgroundTask';
 import { startPhotoBackup } from './src/sync/photoUploader';
 import { RootStack } from './src/ui/navigation/RootStack';
 import { useAutoUpdate } from '@danbro96/lupira-expo-diagnostics/useAutoUpdate';
@@ -22,6 +22,7 @@ import type { RootStackParamList } from './src/ui/navigation/types';
 import { paperSettings } from '@danbro96/lupira-expo-paper/theme/paperSettings';
 import { SENTRY_DSN } from './src/config';
 import { initSentry } from '@danbro96/lupira-expo-diagnostics/initSentry';
+import { detach } from '@danbro96/lupira-expo-diagnostics/log';
 
 initSentry(SENTRY_DSN);
 
@@ -32,14 +33,15 @@ export default function App() {
   const authed = useAuth((s) => s.authMode === 'dev' || s.token !== null);
 
   useEffect(() => {
-    void useAuth.getState().load();
+    detach(useAuth.getState().load(), 'auth:load');
+    return useAuth.getState().startAutoRefresh();
   }, []);
 
   useEffect(() => {
     if (!loaded || !authed) return;
-    void registerBackgroundBackup();
-    void usePrefs.getState().init();
-    void usePhotoBackup.getState().init();
+    detach(registerBackgroundBackup(), 'photos:background-register');
+    detach(usePrefs.getState().init(), 'prefs:init');
+    detach(usePhotoBackup.getState().init(), 'photos:backup-init');
     return startPhotoBackup();
   }, [loaded, authed]);
 

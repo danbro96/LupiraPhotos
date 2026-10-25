@@ -40,14 +40,14 @@ function LinkedEvent({ itemId, photoId }: { itemId: string; photoId: string }) {
   const onRemove = async () => {
     const { failed } = await actions.unlink(itemId, [photoId]);
     if (failed > 0) showSnack('Could not remove the link');
-    else showSnack('Removed from the event', 'success', { label: 'Undo', onPress: () => void actions.link(itemId, [photoId]) });
+    else showSnack('Removed from the event', 'success', { label: 'Undo', onPress: () => { actions.link(itemId, [photoId]).catch(() => showSnack('Could not undo')); } });
   };
 
   return (
     <WrapRow sx={{ my: 0 }}>
       <Button size="small" component="a" href={siblingLinks.calItemUrl(itemId)}>{displayTitle(item?.title)}</Button>
       <Button size="small" component={Link} to={`/?event=${itemId}`}>All its photos</Button>
-      <Button size="small" color="inherit" onClick={() => void onRemove()} disabled={actions.busy}>Remove</Button>
+      <Button size="small" color="inherit" onClick={() => { onRemove().catch(() => showSnack('Could not remove the link')); }} disabled={actions.busy}>Remove</Button>
     </WrapRow>
   );
 }

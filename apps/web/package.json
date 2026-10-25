@@ -18,7 +18,7 @@
     "@danbro96/lupira-domain-links": "0.2.0",
     "@danbro96/lupira-domain-photos": "0.1.0",
     "@danbro96/lupira-domain-places": "0.1.0",
-    "@danbro96/lupira-http": "0.2.1",
+    "@danbro96/lupira-http": "0.3.0",
     "@danbro96/lupira-tokens-core": "0.3.0",
     "@danbro96/lupira-web-mui": "0.1.0",
     "@danbro96/lupira-web-session": "0.2.0",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
-    "@danbro96/lupira-config-eslint": "0.2.0",
+    "@danbro96/lupira-config-eslint": "0.4.1",
     "@rolldown/plugin-babel": "0.2.4",
     "@types/node": "^26.6.2",
     "@types/react": "^19.0.0",

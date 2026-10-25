@@ -1,7 +1,8 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { logDebug } from '@danbro96/lupira-expo-diagnostics/log';
-import { runPhotoBackup } from './photoUploader';
+import { runPhotoBackup } from '../sync/photoUploader';
+import { useAuth } from './auth-store';
 
 /** Best-effort while-backgrounded backup: WorkManager's 15-minute floor, further throttled by Doze and
  *  app-standby buckets — in practice hours, not minutes.
@@ -13,6 +14,8 @@ const TASK_NAME = 'lupira-photos-backup';
 
 TaskManager.defineTask(TASK_NAME, async () => {
   try {
+    if (!useAuth.getState().loaded) await useAuth.getState().load();
+    if (!useAuth.getState().isAuthenticated()) return BackgroundTask.BackgroundTaskResult.Success;
     await runPhotoBackup();
     return BackgroundTask.BackgroundTaskResult.Success;
   } catch (e) {

@@ -10,5 +10,5 @@ connectFocusManager();
 
 /** Every root: a photo write can change list, detail, stats, links and places alike. */
 export function invalidatePhotos(): void {
-  void queryClient.invalidateQueries();
+  queryClient.invalidateQueries();
 }

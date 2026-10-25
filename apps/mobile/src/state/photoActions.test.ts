@@ -13,6 +13,7 @@ vi.mock('@lupira/photos-api/fetch/photo', () => ({
 }));
 vi.mock('./queryClient', () => ({ invalidatePhotos: vi.fn() }));
 vi.mock('@danbro96/lupira-expo-feedback/toast', () => ({ toast: vi.fn(), toastError: vi.fn() }));
+vi.mock('@danbro96/lupira-expo-diagnostics/log', () => ({ detach: vi.fn() }));
 
 import { clearPhotoLocation, relocatePhotos } from '@lupira/photos-api/fetch/photo';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';

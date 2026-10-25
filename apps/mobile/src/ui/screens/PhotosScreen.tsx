@@ -41,6 +41,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { openSibling } from '../openSibling';
 import { ICONS } from '../icons';
 import { thumbCacheKey } from '../photos/imageCache';
+import { detach } from '@danbro96/lupira-expo-diagnostics/log';
 
 const COLUMNS = 3;
 const GAP = 2;
@@ -150,7 +151,7 @@ export function PhotosScreen() {
 
   const onTrashSelected = async () => {
     const ids = takeSelection();
-    report('Moved to trash:', await trashPhotos(ids), () => void restorePhotos(ids));
+    report('Moved to trash:', await trashPhotos(ids), () => { restorePhotos(ids).catch(() => toastError('Could not undo.')); });
   };
   const onRestoreSelected = async () => report('Restored', await restorePhotos(takeSelection()));
   const onUnlinkSelected = async () => {
@@ -158,7 +159,7 @@ export function PhotosScreen() {
     const ids = takeSelection();
     const ok = await unlinkPhotosFromEvent(eventId, ids);
     report('Removed from the event:', ok ? { done: ids.length, failed: 0 } : { done: 0, failed: ids.length },
-      () => void linkPhotosToEvent(eventId, ids, new Map()));
+      () => { linkPhotosToEvent(eventId, ids, new Map()).catch(() => toastError('Could not undo.')); });
   };
   const onPurgeSelected = async () => {
     const ok = await confirm({
@@ -190,9 +191,9 @@ export function PhotosScreen() {
     toggle(photoId);
   };
   const onShowEvent = (eventId: string) => applyFilters((f) => ({ ...f, event: eventId }));
-  const onRefresh = () => void refetch();
+  const onRefresh = () => detach(refetch(), 'photos:refresh');
   const onEndReached = () => {
-    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) detach(fetchNextPage(), 'photos:next-page');
   };
   const onPlace = (place: string) => applyFilters((f) => ({ ...f, place, near: undefined }));
   const onNear = (near: string) => applyFilters((f) => ({ ...f, near, place: undefined, located: undefined }));
@@ -244,17 +245,17 @@ export function PhotosScreen() {
             <Text style={[styles.selectedCount, { color: c.text }]}>{selected.size} selected</Text>
             {filters.trashed ? (
               <>
-                <IconButton icon={ICONS.restore} onPress={() => void onRestoreSelected()} accessibilityLabel="Restore" />
-                <IconButton icon={ICONS.deleteForever} iconColor={c.danger} onPress={() => void onPurgeSelected()} accessibilityLabel="Delete for good" />
+                <IconButton icon={ICONS.restore} onPress={() => { onRestoreSelected().catch(() => toastError('Could not restore the photos.')); }} accessibilityLabel="Restore" />
+                <IconButton icon={ICONS.deleteForever} iconColor={c.danger} onPress={() => { onPurgeSelected().catch(() => toastError('Could not delete the photos.')); }} accessibilityLabel="Delete for good" />
               </>
             ) : (
               <>
                 <IconButton icon={ICONS.link} onPress={() => setLinking(true)} accessibilityLabel="Link to event" />
                 <IconButton icon={ICONS.editLocation} onPress={() => setLocating(true)} accessibilityLabel="Set location" />
                 {filters.event && (
-                  <IconButton icon={ICONS.linkOff} onPress={() => void onUnlinkSelected()} accessibilityLabel="Remove from event" />
+                  <IconButton icon={ICONS.linkOff} onPress={() => { onUnlinkSelected().catch(() => toastError('Could not remove the photos from the event.')); }} accessibilityLabel="Remove from event" />
                 )}
-                <IconButton icon={ICONS.delete} iconColor={c.danger} onPress={() => void onTrashSelected()} accessibilityLabel="Move to trash" />
+                <IconButton icon={ICONS.delete} iconColor={c.danger} onPress={() => { onTrashSelected().catch(() => toastError('Could not move the photos to trash.')); }} accessibilityLabel="Move to trash" />
               </>
             )}
           </>
@@ -275,7 +276,7 @@ export function PhotosScreen() {
               </Chip>
             ))}
             {filters.trashed && items.length > 0 && (
-              <Chip compact icon={ICONS.deleteForever} onPress={() => void onEmptyTrash()}>Empty trash</Chip>
+              <Chip compact icon={ICONS.deleteForever} onPress={() => { onEmptyTrash().catch(() => toastError('Could not empty the trash.')); }}>Empty trash</Chip>
             )}
             <BackupChips onOpenSettings={() => navigation.navigate('Settings')} />
             {!filters.trashed && (stats?.trashedAssets ?? 0) > 0 && (
@@ -369,7 +370,7 @@ function BackupChips({ onOpenSettings }: { onOpenSettings: () => void }) {
         </Chip>
       )}
       {parked > 0 && (
-        <Chip compact icon={ICONS.alert} textStyle={{ color: c.warning }} onPress={() => void retryParkedPhotos()}>
+        <Chip compact icon={ICONS.alert} textStyle={{ color: c.warning }} onPress={() => { retryParkedPhotos().catch(() => toastError('Could not retry the uploads.')); }}>
           {parked} didn’t upload · retry
         </Chip>
       )}

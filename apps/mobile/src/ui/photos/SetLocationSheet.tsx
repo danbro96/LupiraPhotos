@@ -25,6 +25,7 @@ import { useOnline } from '@danbro96/lupira-expo-query/online';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 import { GeoBanner } from './GeoBanner';
+import { toastError } from '@danbro96/lupira-expo-feedback/toast';
 
 type Photo = LocationState & { takenAt: string };
 
@@ -184,7 +185,7 @@ export function SetLocationSheet({ photos, onDismiss, onDone }: {
               title="Set location"
               disabled={!target || busy || !online || (target.source === 'saved' && !settled)}
               loading={busy}
-              onPress={() => void onApply()}
+              onPress={() => { onApply().catch(() => toastError('Could not set the location.')); }}
             />
           </View>
     </Sheet>

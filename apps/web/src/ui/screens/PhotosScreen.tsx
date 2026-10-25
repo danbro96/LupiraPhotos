@@ -89,7 +89,7 @@ export function PhotosScreen() {
       return next;
     }, { replace: true, state: location.state });
   const closeViewer = () => {
-    if ((location.state as { viewer?: boolean } | null)?.viewer) navigate(-1);
+    if ((location.state as { viewer?: boolean } | null)?.viewer) navigate(-1)?.catch(reportError);
     else setParam('photo', undefined);
   };
 
@@ -145,7 +145,7 @@ export function PhotosScreen() {
     const ids = selectedPhotos.map((p) => p.id);
     setSelected(new Set());
     const outcome = await actions.trash(ids);
-    report('Moved to trash:', outcome, () => void actions.restore(ids));
+    report('Moved to trash:', outcome, () => { actions.restore(ids).catch(() => showSnack('Could not undo')); });
   };
 
   const onRestoreSelected = async () => {
@@ -158,7 +158,7 @@ export function PhotosScreen() {
     const ids = selectedPhotos.map((p) => p.id);
     setSelected(new Set());
     const outcome = await actions.unlink(filters.event, ids);
-    report('Removed from the event:', outcome, () => void actions.link(filters.event, ids));
+    report('Removed from the event:', outcome, () => { actions.link(filters.event, ids).catch(() => showSnack('Could not undo')); });
   };
 
   const onConfirmed = async () => {
@@ -177,7 +177,7 @@ export function PhotosScreen() {
   const openPhoto = params.get('photo');
   const sentinel = useRef<HTMLDivElement>(null);
   const loadMore = useCallback(() => {
-    if (!isFetchingNextPage) void fetchNextPage();
+    if (!isFetchingNextPage) fetchNextPage().catch(reportError);
   }, [isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
@@ -204,7 +204,7 @@ export function PhotosScreen() {
           <Typography component="h2" variant="h6" sx={{ mr: 1 }}>{selected.size} selected</Typography>
           {inTrash ? (
             <>
-              <Button variant="outlined" size="small" onClick={() => void onRestoreSelected()} disabled={actions.busy}>Restore</Button>
+              <Button variant="outlined" size="small" onClick={() => { onRestoreSelected().catch(() => showSnack('Could not restore the photos')); }} disabled={actions.busy}>Restore</Button>
               <Button variant="outlined" size="small" color="error" onClick={() => setConfirming('purge')} disabled={actions.busy}>
                 Delete for good
               </Button>
@@ -214,11 +214,11 @@ export function PhotosScreen() {
               <Button variant="outlined" size="small" onClick={() => setLinking(true)}>Link to event…</Button>
               <Button variant="outlined" size="small" onClick={() => setLocating(true)}>Set location…</Button>
               {filters.event && (
-                <Button variant="outlined" size="small" onClick={() => void onUnlinkSelected()} disabled={actions.busy}>
+                <Button variant="outlined" size="small" onClick={() => { onUnlinkSelected().catch(() => showSnack('Could not remove the photos from the event')); }} disabled={actions.busy}>
                   Remove from event
                 </Button>
               )}
-              <Button variant="outlined" size="small" color="error" onClick={() => void onTrashSelected()} disabled={actions.busy}>
+              <Button variant="outlined" size="small" color="error" onClick={() => { onTrashSelected().catch(() => showSnack('Could not move the photos to trash')); }} disabled={actions.busy}>
                 Move to trash
               </Button>
             </>
@@ -421,7 +421,7 @@ export function PhotosScreen() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirming(null)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={() => void onConfirmed()}>Delete for good</Button>
+          <Button variant="contained" color="error" onClick={() => { onConfirmed().catch(() => showSnack('Could not delete the photos')); }}>Delete for good</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -12,6 +12,7 @@ import { VersionLine } from '@danbro96/lupira-expo-diagnostics/VersionLine';
 import { ICONS } from '../icons';
 import type { RootStackParamList } from '../navigation/types';
 import { useColors } from '../theme';
+import { toastError } from '@danbro96/lupira-expo-feedback/toast';
 
 const join = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(' · ');
 
@@ -46,7 +47,7 @@ export function SettingsScreen() {
       />
 
       <List.Subheader>Account</List.Subheader>
-      {authMode !== 'dev' && <SignOutButton onSignOut={() => void useAuth.getState().clearSession()} />}
+      {authMode !== 'dev' && <SignOutButton onSignOut={() => { useAuth.getState().clearSession().catch(() => toastError('Could not sign out.')); }} />}
 
       <List.Subheader>Backup</List.Subheader>
       <List.Item
@@ -66,7 +67,7 @@ export function SettingsScreen() {
         right={() => (
           <Switch
             value={prefs.debugEnabled}
-            onValueChange={(v) => void usePrefs.getState().setDebugEnabled(v)}
+            onValueChange={(v) => { usePrefs.getState().setDebugEnabled(v).catch(() => toastError('Could not save the setting.')); }}
             accessibilityLabel="Enable debug"
           />
         )}

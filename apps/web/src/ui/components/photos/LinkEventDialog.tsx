@@ -41,7 +41,7 @@ export function LinkEventDialog({ photos, onClose, onLinked }: {
       showSnack(
         linkedMessage(photos.length, done),
         'success',
-        done > 0 ? { label: 'Undo', onPress: () => void actions.unlink(itemId, pending) } : undefined,
+        done > 0 ? { label: 'Undo', onPress: () => { actions.unlink(itemId, pending).catch(() => showSnack('Could not undo')); } } : undefined,
       );
       onLinked?.();
     }
@@ -60,7 +60,7 @@ export function LinkEventDialog({ photos, onClose, onLinked }: {
         )}
         <List dense>
           {(candidates ?? []).map((item) => (
-            <ListItemButton key={item.id} disabled={busy} onClick={() => void onPick(item.id)}>
+            <ListItemButton key={item.id} disabled={busy} onClick={() => { onPick(item.id).catch(() => showSnack('Could not link the photos')); }}>
               <ListItemText primary={displayTitle(item.title)} secondary={fmtWhen(item.start, item.isAllDay)} />
             </ListItemButton>
           ))}

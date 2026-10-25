@@ -95,7 +95,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
     leave();
     const { failed } = await actions.trash([photoId]);
     if (failed > 0) showSnack('Could not move the photo to trash');
-    else showSnack(PHOTO_TEXT.movedToTrash, 'success', { label: 'Undo', onPress: () => void actions.restore([photoId]) });
+    else showSnack(PHOTO_TEXT.movedToTrash, 'success', { label: 'Undo', onPress: () => { actions.restore([photoId]).catch(() => showSnack('Could not undo')); } });
   };
 
   const onRestore = async () => {
@@ -113,7 +113,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
 
   const onReprocess = () =>
     reprocess.mutate({ id: photoId }, {
-      onSuccess: () => { showSnack('Queued for reprocessing', 'success'); void invalidate(); },
+      onSuccess: () => { showSnack('Queued for reprocessing', 'success'); invalidate(); },
       onError: (e) => showSnack(e instanceof Error ? e.message : 'Could not queue the photo'),
     });
 
@@ -137,7 +137,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
             {photo?.trashedAt ? (
               <>
                 <Tooltip title="Restore">
-                  <IconButton onClick={() => void onRestore()} disabled={actions.busy} sx={onImage} aria-label="Restore">
+                  <IconButton onClick={() => { onRestore().catch(() => showSnack('Could not restore the photo')); }} disabled={actions.busy} sx={onImage} aria-label="Restore">
                     <RestoreIcon />
                   </IconButton>
                 </Tooltip>
@@ -149,7 +149,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
               </>
             ) : (
               <Tooltip title="Move to trash">
-                <IconButton onClick={() => void onTrash()} disabled={actions.busy || !photo} sx={onImage} aria-label="Move to trash">
+                <IconButton onClick={() => { onTrash().catch(() => showSnack('Could not move the photo to trash')); }} disabled={actions.busy || !photo} sx={onImage} aria-label="Move to trash">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
@@ -279,7 +279,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirming(false)}>Cancel</Button>
-          <Button variant="contained" color="error" onClick={() => void onPurge()}>Delete for good</Button>
+          <Button variant="contained" color="error" onClick={() => { onPurge().catch(() => showSnack(PHOTO_TEXT.deleteFailed)); }}>Delete for good</Button>
         </DialogActions>
       </Dialog>
     </Dialog>
