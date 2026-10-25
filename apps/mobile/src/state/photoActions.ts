@@ -1,6 +1,7 @@
 import { onlineManager } from '@tanstack/react-query';
 import { clearPhotoLocation, deletePhoto, emptyPhotoTrash, relocatePhotos, restorePhoto, trashPhoto } from '@lupira/photos-api/fetch/photo';
 import { chunk, planUndo, RELOCATE_MAX_IDS, type LocationState, type RelocateTarget } from '@lupira/photos-domain/photoLocation';
+import { outcomeMessage } from '@lupira/photos-domain/photoFormat';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { relocatedMessage } from '../domain/geoPlaces';
 import { invalidatePhotos } from './queryClient';
@@ -18,6 +19,14 @@ async function each(ids: readonly string[], call: (id: string) => Promise<unknow
   }
   invalidatePhotos();
   return { done: ids.length - failed, failed };
+}
+
+/** Runs an Undo offered on a toast; a rejection or any photo it could not put back is reported. */
+export function undo(work: Promise<Outcome>): void {
+  work.then(
+    (outcome) => { if (outcome.failed > 0) toastError(outcome.done > 0 ? outcomeMessage('Undid', outcome) : 'Could not undo.'); },
+    () => toastError('Could not undo.'),
+  );
 }
 
 export const trashPhotos = (ids: readonly string[]) => each(ids, trashPhoto);

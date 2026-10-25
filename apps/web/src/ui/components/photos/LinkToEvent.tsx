@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { useGetItem } from '@lupira/photos-api/query/cal';
 import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
+import { undo } from '../../../state/undo';
 import { usePhotoActions } from '../../../state/usePhotoActions';
 import { usePhotoEventLinks } from '../../../state/usePhotoLibrary';
 import { DrawerSection } from '../DrawerSection';
@@ -40,7 +41,7 @@ function LinkedEvent({ itemId, photoId }: { itemId: string; photoId: string }) {
   const onRemove = async () => {
     const { failed } = await actions.unlink(itemId, [photoId]);
     if (failed > 0) showSnack('Could not remove the link');
-    else showSnack('Removed from the event', 'success', { label: 'Undo', onPress: () => { actions.link(itemId, [photoId]).catch(() => showSnack('Could not undo')); } });
+    else showSnack('Removed from the event', 'success', { label: 'Undo', onPress: () => { undo(actions.link(itemId, [photoId]), showSnack); } });
   };
 
   return (

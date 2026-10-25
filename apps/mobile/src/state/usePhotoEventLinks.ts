@@ -8,6 +8,7 @@ import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
 import { onlineQuery } from '@danbro96/lupira-expo-query/onlineQuery';
 import { PHOTO_SEARCH } from '@lupira/photos-domain/photoTimeline';
 import { invalidatePhotos } from './queryClient';
+import type { Outcome } from './photoActions';
 
 /** Every photo↔event edge the caller can see, in one call rather than a request per tile. */
 function usePhotoEventEdges() {
@@ -63,18 +64,18 @@ export function useLinkCandidates(takenAts: readonly string[], enabled: boolean)
 /** Links the photos not already linked to the event, in one call. `linked` is what an Undo unlinks. */
 export async function linkPhotosToEvent(
   itemId: string, photoIds: readonly string[], links: ReadonlyMap<string, string[]>,
-): Promise<{ linked: string[]; ok: boolean }> {
+): Promise<Outcome & { linked: string[] }> {
   const pending = unlinkedPhotoIds(photoIds, links, itemId);
-  if (pending.length === 0) return { linked: [], ok: true };
+  if (pending.length === 0) return { linked: [], done: 0, failed: 0 };
   const ok = await createItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: pending }).then(() => true, () => false);
   invalidatePhotos();
-  return ok ? { linked: pending, ok } : { linked: [], ok };
+  return ok ? { linked: pending, done: pending.length, failed: 0 } : { linked: [], done: 0, failed: pending.length };
 }
 
-export async function unlinkPhotosFromEvent(itemId: string, photoIds: readonly string[]): Promise<boolean> {
+export async function unlinkPhotosFromEvent(itemId: string, photoIds: readonly string[]): Promise<Outcome> {
   const ok = await deleteItemRelationsBatch(itemId, { ...PHOTO_LINK, toRefs: [...photoIds] }).then(() => true, () => false);
   invalidatePhotos();
-  return ok;
+  return ok ? { done: photoIds.length, failed: 0 } : { done: 0, failed: photoIds.length };
 }
 
 /** Events by name, newest first — a photo search usually means a past event. */

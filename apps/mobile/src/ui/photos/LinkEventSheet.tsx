@@ -7,6 +7,7 @@ import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
 import { Sheet } from '@danbro96/lupira-expo-paper/components/Sheet';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { linkPhotosToEvent, unlinkPhotosFromEvent, useLinkCandidates, usePhotoEventLinks } from '../../state/usePhotoEventLinks';
+import { undo } from '../../state/photoActions';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 
@@ -23,13 +24,13 @@ export function LinkEventSheet({ photos, onDismiss, onLinked }: {
 
   const onPick = async (itemId: string) => {
     setBusy(true);
-    const { linked, ok } = await linkPhotosToEvent(itemId, photos.map((p) => p.id), links);
+    const { linked, failed } = await linkPhotosToEvent(itemId, photos.map((p) => p.id), links);
     setBusy(false);
-    if (!ok) {
+    if (failed > 0) {
       toastError('Could not link the photos.');
     } else {
       toast(linkedMessage(photos.length, linked.length), linked.length > 0
-        ? { action: { label: 'Undo', onPress: () => { unlinkPhotosFromEvent(itemId, linked).catch(() => toastError('Could not undo.')); } } }
+        ? { action: { label: 'Undo', onPress: () => { undo(unlinkPhotosFromEvent(itemId, linked)); } } }
         : undefined);
       onLinked?.();
     }

@@ -18,6 +18,7 @@ import { fmtPhotoRange } from '@lupira/photos-domain/photoTimeline';
 import type { PhotoListItemDto } from '@lupira/photos-api/models';
 import { photoEmptyText } from '@lupira/photos-domain/photoFilter';
 import { SCRIM } from '@danbro96/lupira-tokens-core/color';
+import { undo } from '../../state/undo';
 import { usePhotoActions } from '../../state/usePhotoActions';
 import { withFilterParam } from '../../state/photoParams';
 import { aroundChips } from '../../state/photoPlaces';
@@ -145,7 +146,7 @@ export function PhotosScreen() {
     const ids = selectedPhotos.map((p) => p.id);
     setSelected(new Set());
     const outcome = await actions.trash(ids);
-    report('Moved to trash:', outcome, () => { actions.restore(ids).catch(() => showSnack('Could not undo')); });
+    report('Moved to trash:', outcome, () => { undo(actions.restore(ids), showSnack); });
   };
 
   const onRestoreSelected = async () => {
@@ -158,7 +159,7 @@ export function PhotosScreen() {
     const ids = selectedPhotos.map((p) => p.id);
     setSelected(new Set());
     const outcome = await actions.unlink(filters.event, ids);
-    report('Removed from the event:', outcome, () => { actions.link(filters.event, ids).catch(() => showSnack('Could not undo')); });
+    report('Removed from the event:', outcome, () => { undo(actions.link(filters.event, ids), showSnack); });
   };
 
   const onConfirmed = async () => {

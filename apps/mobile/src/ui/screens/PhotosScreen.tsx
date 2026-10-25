@@ -16,7 +16,7 @@ import { photoGrid, type PhotoGridEntry } from '@lupira/photos-domain/photoGrid'
 import { hapticSelection } from '@danbro96/lupira-expo-feedback/haptics';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { usePhotoBackup } from '../../state/photo-backup-store';
-import { emptyTrash, purgePhotos, restorePhotos, trashPhotos, type Outcome } from '../../state/photoActions';
+import { emptyTrash, purgePhotos, restorePhotos, trashPhotos, undo, type Outcome } from '../../state/photoActions';
 import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { linkPhotosToEvent, unlinkPhotosFromEvent, useLinkedEvents, usePhotoEventLinks } from '../../state/usePhotoEventLinks';
 import { DEFAULT_PHOTO_FILTERS, groupByDay, usePhotoLibrary, usePhotoStats, type PhotoDay, type PhotoQueryFilters } from '../../state/usePhotoLibrary';
@@ -151,15 +151,14 @@ export function PhotosScreen() {
 
   const onTrashSelected = async () => {
     const ids = takeSelection();
-    report('Moved to trash:', await trashPhotos(ids), () => { restorePhotos(ids).catch(() => toastError('Could not undo.')); });
+    report('Moved to trash:', await trashPhotos(ids), () => { undo(restorePhotos(ids)); });
   };
   const onRestoreSelected = async () => report('Restored', await restorePhotos(takeSelection()));
   const onUnlinkSelected = async () => {
     const eventId = filters.event!;
     const ids = takeSelection();
-    const ok = await unlinkPhotosFromEvent(eventId, ids);
-    report('Removed from the event:', ok ? { done: ids.length, failed: 0 } : { done: 0, failed: ids.length },
-      () => { linkPhotosToEvent(eventId, ids, new Map()).catch(() => toastError('Could not undo.')); });
+    report('Removed from the event:', await unlinkPhotosFromEvent(eventId, ids),
+      () => { undo(linkPhotosToEvent(eventId, ids, new Map())); });
   };
   const onPurgeSelected = async () => {
     const ok = await confirm({

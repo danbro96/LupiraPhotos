@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Chip, Text } from 'react-native-paper';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { linkPhotosToEvent, unlinkPhotosFromEvent, useLinkedEvents, usePhotoEventLinks } from '../../state/usePhotoEventLinks';
+import { undo } from '../../state/photoActions';
 import { useColors } from '../theme';
 import { ICONS } from '../icons';
 import { openSibling } from '../openSibling';
@@ -17,12 +18,12 @@ export function PhotoEventLinks({ photoId, takenAt }: { photoId: string; takenAt
   const [picking, setPicking] = useState(false);
 
   const onRemove = async (eventId: string) => {
-    if (!(await unlinkPhotosFromEvent(eventId, [photoId]))) {
+    if ((await unlinkPhotosFromEvent(eventId, [photoId])).failed > 0) {
       toastError('Could not remove the link.');
       return;
     }
     toast('Removed from the event', {
-      action: { label: 'Undo', onPress: () => { linkPhotosToEvent(eventId, [photoId], new Map()).catch(() => toastError('Could not undo.')); } },
+      action: { label: 'Undo', onPress: () => { undo(linkPhotosToEvent(eventId, [photoId], new Map())); } },
     });
   };
 

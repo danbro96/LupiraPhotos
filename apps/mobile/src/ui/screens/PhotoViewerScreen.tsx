@@ -17,7 +17,7 @@ import { fmtBytes, fmtDimensions, fmtDuration, geotagLabel, gpsRejectionLabel, i
 import { PHOTO_TEXT } from '@danbro96/lupira-domain-photos/photoLinks';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { placeHeading } from '../../domain/geoPlaces';
-import { purgePhotos, restorePhotos, trashPhotos } from '../../state/photoActions';
+import { purgePhotos, restorePhotos, trashPhotos, undo } from '../../state/photoActions';
 import { useSavedPlaces } from '../../state/useGeoPlaces';
 import { DEFAULT_PHOTO_FILTERS, usePhoto, usePhotoLibrary } from '../../state/usePhotoLibrary';
 import { saveOriginalToPhone } from '../../sync/photoUploader';
@@ -80,7 +80,7 @@ export function PhotoViewerScreen() {
       toastError('Could not move the photo to trash.');
       return;
     }
-    toast(PHOTO_TEXT.movedToTrash, { action: { label: 'Undo', onPress: () => { restorePhotos([id]).catch(() => toastError('Could not undo.')); } } });
+    toast(PHOTO_TEXT.movedToTrash, { action: { label: 'Undo', onPress: () => { undo(restorePhotos([id])); } } });
     navigation.goBack();
   };
 

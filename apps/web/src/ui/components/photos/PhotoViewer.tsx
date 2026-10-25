@@ -18,6 +18,7 @@ import { PHOTO_TEXT } from '@danbro96/lupira-domain-photos/photoLinks';
 import { SCRIM } from '@danbro96/lupira-tokens-core/color';
 import { useSavedPlaces } from '../../../state/useGeoPlaces';
 import { useInvalidatePhotos } from '../../../state/useInvalidate';
+import { undo } from '../../../state/undo';
 import { usePhotoActions } from '../../../state/usePhotoActions';
 import { useIsPhone } from '../../hooks/useIsPhone';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, DeleteIcon, OpenInNewIcon, RestoreIcon } from '@danbro96/lupira-web-mui/icons';
@@ -95,7 +96,7 @@ export function PhotoViewer({ photoId, siblings, hasMore, onLoadMore, onClose, o
     leave();
     const { failed } = await actions.trash([photoId]);
     if (failed > 0) showSnack('Could not move the photo to trash');
-    else showSnack(PHOTO_TEXT.movedToTrash, 'success', { label: 'Undo', onPress: () => { actions.restore([photoId]).catch(() => showSnack('Could not undo')); } });
+    else showSnack(PHOTO_TEXT.movedToTrash, 'success', { label: 'Undo', onPress: () => { undo(actions.restore([photoId]), showSnack); } });
   };
 
   const onRestore = async () => {

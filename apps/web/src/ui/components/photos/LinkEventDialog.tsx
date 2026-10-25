@@ -12,6 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { fmtWhen } from '@danbro96/lupira-domain-core/time';
 import { displayTitle } from '@danbro96/lupira-domain-events/itemLabels';
+import { undo } from '../../../state/undo';
 import { usePhotoActions } from '../../../state/usePhotoActions';
 import { useLinkCandidates, usePhotoEventLinks } from '../../../state/usePhotoLibrary';
 import { useSnackbar } from '@danbro96/lupira-web-mui/SnackbarHost';
@@ -41,7 +42,7 @@ export function LinkEventDialog({ photos, onClose, onLinked }: {
       showSnack(
         linkedMessage(photos.length, done),
         'success',
-        done > 0 ? { label: 'Undo', onPress: () => { actions.unlink(itemId, pending).catch(() => showSnack('Could not undo')); } } : undefined,
+        done > 0 ? { label: 'Undo', onPress: () => { undo(actions.unlink(itemId, pending), showSnack); } } : undefined,
       );
       onLinked?.();
     }

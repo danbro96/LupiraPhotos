@@ -18,7 +18,7 @@ vi.mock('@danbro96/lupira-expo-diagnostics/log', () => ({ detach: vi.fn() }));
 import { clearPhotoLocation, relocatePhotos } from '@lupira/photos-api/fetch/photo';
 import { toast, toastError } from '@danbro96/lupira-expo-feedback/toast';
 import { invalidatePhotos } from './queryClient';
-import { relocate } from './photoActions';
+import { relocate, undo } from './photoActions';
 
 const relocateMock = vi.mocked(relocatePhotos);
 const clearMock = vi.mocked(clearPhotoLocation);
@@ -134,5 +134,28 @@ describe('relocate', () => {
       undoOf()();
       await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not restore 1 photo.'));
     });
+  });
+});
+
+describe('undo', () => {
+  it('stays quiet when everything was put back', async () => {
+    undo(Promise.resolve({ done: 2, failed: 0 }));
+    await new Promise((settle) => setTimeout(settle));
+    expect(toastError).not.toHaveBeenCalled();
+  });
+
+  it('reports an undo that failed outright', async () => {
+    undo(Promise.resolve({ done: 0, failed: 1 }));
+    await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not undo.'));
+  });
+
+  it('counts the photos a partial undo missed', async () => {
+    undo(Promise.resolve({ done: 2, failed: 1 }));
+    await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith('Undid 2, 1 failed'));
+  });
+
+  it('reports a rejected undo the same way', async () => {
+    undo(Promise.reject(new Error('offline')));
+    await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not undo.'));
   });
 });
