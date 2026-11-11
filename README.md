@@ -37,7 +37,7 @@ Mobile (from `apps/mobile`): `npm run android` (dev client), `npm start`. Settin
 EAS build → Play Console internal testing, as for the other Lupira apps:
 
 - Native: push to `release/android` (`mobile-release.yml`: tests → `eas build --profile production --auto-submit` → tag `android/v<version>+<versionCode>`).
-- OTA (JS-only): run `mobile-ota.yml` (branch `production` or `preview`), or `eas update --branch production --message "…"`.
+- OTA (JS-only): run `mobile-ota.yml` (branch `production` or `preview`). It exports the bundle with source maps, publishes it with `eas update --skip-bundler`, and uploads the maps to Sentry.
 - `expo.version` in `app.json` is the human version; EAS bumps `versionCode` per production build.
 - Release builds run R8. `expo-build-properties` keeps WorkManager's Room database and input mergers, which it creates by reflection (`expo-background-task` runs on WorkManager).
 - Sentry (`brostrom/lupira-photos`, de region): the `@sentry/react-native/expo` plugin's Gradle plugin uploads the R8 mapping and source maps from each EAS build (`SENTRY_AUTH_TOKEN` in the EAS environment).
