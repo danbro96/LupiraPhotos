@@ -2,11 +2,13 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { fmtDateTime } from '@danbro96/lupira-domain-core/time';
 import { Image } from 'expo-image';
-import { memo, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useLayoutEffect, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, useWindowDimensions, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastClearance } from '@danbro96/lupira-expo-paper/components/ToastHost';
-import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import {
+  Directions, GestureDetector, useFlingGesture, usePanGesture, usePinchGesture, useSimultaneousGestures, useTapGesture,
+} from 'react-native-gesture-handler';
 import { Button, IconButton, List, Menu, Text } from 'react-native-paper';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -293,64 +295,72 @@ const PhotoPage = memo(function PhotoPage({ photo, width, active, originalUrl, o
     savedY.set(0);
   }, [active, scale, saved, x, y, savedX, savedY]);
 
-  // Memoized: a fresh gesture makes GestureDetector re-attach its native handlers every render.
-  const gesture = useMemo(() => {
-    const report = (next: boolean) => {
-      setZoomed(next);
-      onZoomChange(next);
-    };
-    const clampX = (v: number) => {
-      'worklet';
-      const max = (width * (scale.get() - 1)) / 2;
-      return Math.min(Math.max(v, -max), max);
-    };
-    const clampY = (v: number) => {
-      'worklet';
-      const max = (height.get() * (scale.get() - 1)) / 2;
-      return Math.min(Math.max(v, -max), max);
-    };
-    const settle = (next: number) => {
-      'worklet';
-      saved.set(next);
-      if (next <= 1) {
-        x.set(withTiming(0));
-        y.set(withTiming(0));
-        savedX.set(0);
-        savedY.set(0);
-      } else {
-        x.set(clampX(x.get()));
-        y.set(clampY(y.get()));
-        savedX.set(x.get());
-        savedY.set(y.get());
-      }
-      scheduleOnRN(report, next > 1);
-    };
+  const report = (next: boolean) => {
+    setZoomed(next);
+    onZoomChange(next);
+  };
+  const clampX = (v: number) => {
+    'worklet';
+    const max = (width * (scale.get() - 1)) / 2;
+    return Math.min(Math.max(v, -max), max);
+  };
+  const clampY = (v: number) => {
+    'worklet';
+    const max = (height.get() * (scale.get() - 1)) / 2;
+    return Math.min(Math.max(v, -max), max);
+  };
+  const settle = (next: number) => {
+    'worklet';
+    saved.set(next);
+    if (next <= 1) {
+      x.set(withTiming(0));
+      y.set(withTiming(0));
+      savedX.set(0);
+      savedY.set(0);
+    } else {
+      x.set(clampX(x.get()));
+      y.set(clampY(y.get()));
+      savedX.set(x.get());
+      savedY.set(y.get());
+    }
+    scheduleOnRN(report, next > 1);
+  };
 
-    const pinch = Gesture.Pinch()
-      .onUpdate((e) => { scale.set(Math.min(Math.max(saved.get() * e.scale, 1), MAX_SCALE)); })
-      .onEnd(() => settle(scale.get()));
-    const pan = Gesture.Pan()
-      .enabled(zoomed)
-      .averageTouches(true)
-      .onUpdate((e) => {
-        x.set(clampX(savedX.get() + e.translationX));
-        y.set(clampY(savedY.get() + e.translationY));
-      })
-      .onEnd(() => {
-        savedX.set(x.get());
-        savedY.set(y.get());
-      });
-    const doubleTap = Gesture.Tap().numberOfTaps(2).onEnd(() => {
+  const pinch = usePinchGesture({
+    onUpdate: (e) => { scale.set(Math.min(Math.max(saved.get() * e.scale, 1), MAX_SCALE)); },
+    onDeactivate: () => settle(scale.get()),
+  });
+  const pan = usePanGesture({
+    enabled: zoomed,
+    averageTouches: true,
+    onUpdate: (e) => {
+      x.set(clampX(savedX.get() + e.translationX));
+      y.set(clampY(savedY.get() + e.translationY));
+    },
+    onDeactivate: () => {
+      savedX.set(x.get());
+      savedY.set(y.get());
+    },
+  });
+  const doubleTap = useTapGesture({
+    numberOfTaps: 2,
+    onDeactivate: () => {
       const next = scale.get() > 1 ? 1 : 2;
       scale.set(withTiming(next));
       settle(next);
-    });
-    const swipeUp = Gesture.Fling().direction(Directions.UP).enabled(!zoomed)
-      .onEnd((_e, success) => { if (success) scheduleOnRN(onSwipeInfo, true); });
-    const swipeDown = Gesture.Fling().direction(Directions.DOWN).enabled(!zoomed)
-      .onEnd((_e, success) => { if (success) scheduleOnRN(onSwipeInfo, false); });
-    return Gesture.Simultaneous(pinch, pan, doubleTap, swipeUp, swipeDown);
-  }, [scale, saved, x, y, savedX, savedY, height, width, zoomed, onZoomChange, onSwipeInfo]);
+    },
+  });
+  const swipeUp = useFlingGesture({
+    direction: Directions.UP,
+    enabled: !zoomed,
+    onDeactivate: (e) => { if (!e.canceled) scheduleOnRN(onSwipeInfo, true); },
+  });
+  const swipeDown = useFlingGesture({
+    direction: Directions.DOWN,
+    enabled: !zoomed,
+    onDeactivate: (e) => { if (!e.canceled) scheduleOnRN(onSwipeInfo, false); },
+  });
+  const gesture = useSimultaneousGestures(pinch, pan, doubleTap, swipeUp, swipeDown);
 
   const zoom = useAnimatedStyle(() => ({
     transform: [{ translateX: x.get() }, { translateY: y.get() }, { scale: scale.get() }],
