@@ -122,6 +122,7 @@ export type SearchItemsQueryResult = NonNullable<Awaited<ReturnType<typeof searc
 export type SearchItemsQueryError = ProblemDetails
 
 
+/** @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read. */
 export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, TError = ProblemDetails>(
  params: undefined |  SearchItemsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchItems>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -132,6 +133,7 @@ export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, 
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read. */
 export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, TError = ProblemDetails>(
  params?: SearchItemsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchItems>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -142,14 +144,12 @@ export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, 
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read. */
 export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, TError = ProblemDetails>(
  params?: SearchItemsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchItems>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read.
- */
-
+/** @summary Search calendar items (text + tag + parent + attendee contact + category/status filter; recurrence expanded in-window; from/to match occurrences overlapping the window). Text queries and parent/contact filters with no from/to match all-time; otherwise the window defaults to ±1 year. skip/take page over occurrences sorted by start (desc=true for newest first). Only items accepted into a calendar you can read. */
 export function useSearchItems<TData = Awaited<ReturnType<typeof searchItems>>, TError = ProblemDetails>(
  params?: SearchItemsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchItems>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -222,6 +222,7 @@ export type GetItemQueryResult = NonNullable<Awaited<ReturnType<typeof getItem>>
 export type GetItemQueryError = ProblemDetails
 
 
+/** @summary Get a single calendar item. */
 export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError = ProblemDetails>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getItem>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -232,6 +233,7 @@ export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError =
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Get a single calendar item. */
 export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getItem>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -242,14 +244,12 @@ export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError =
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Get a single calendar item. */
 export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getItem>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get a single calendar item.
- */
-
+/** @summary Get a single calendar item. */
 export function useGetItem<TData = Awaited<ReturnType<typeof getItem>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getItem>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -342,9 +342,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CreateItemRelationsBatchMutationError = ProblemDetails
     export type CreateItemRelationsBatchMutationVariables = {id: string;data: CreateRelationsBatchRequest}
 
-    /**
- * @summary Link many references of one kind to an item at once (idempotent per reference) — e.g. an album's photos to its event.
- */
+    /** @summary Link many references of one kind to an item at once (idempotent per reference) — e.g. an album's photos to its event. */
 export const useCreateItemRelationsBatch = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createItemRelationsBatch>>, TError,CreateItemRelationsBatchMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -430,9 +428,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DeleteItemRelationsBatchMutationError = ProblemDetails
     export type DeleteItemRelationsBatchMutationVariables = {id: string;data: DeleteRelationsBatchRequest}
 
-    /**
- * @summary Unlink many references of one kind from an item at once (idempotent: references with no matching edge are ignored).
- */
+    /** @summary Unlink many references of one kind from an item at once (idempotent: references with no matching edge are ignored). */
 export const useDeleteItemRelationsBatch = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteItemRelationsBatch>>, TError,DeleteItemRelationsBatchMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -505,6 +501,7 @@ export type ListRelationEdgesQueryResult = NonNullable<Awaited<ReturnType<typeof
 export type ListRelationEdgesQueryError = ProblemDetails
 
 
+/** @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links. */
 export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelationEdges>>, TError = ProblemDetails>(
  params: ListRelationEdgesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRelationEdges>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -515,6 +512,7 @@ export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelat
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links. */
 export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelationEdges>>, TError = ProblemDetails>(
  params: ListRelationEdgesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRelationEdges>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -525,14 +523,12 @@ export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelat
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links. */
 export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelationEdges>>, TError = ProblemDetails>(
  params: ListRelationEdgesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRelationEdges>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links.
- */
-
+/** @summary Every edge of one kind the caller can see, with its item and reference — e.g. all photo links. */
 export function useListRelationEdges<TData = Awaited<ReturnType<typeof listRelationEdges>>, TError = ProblemDetails>(
  params: ListRelationEdgesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRelationEdges>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient

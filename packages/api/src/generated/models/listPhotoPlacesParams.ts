@@ -6,6 +6,6 @@
  */
 
 export type ListPhotoPlacesParams = {
-q?: string;
-limit?: number;
+  q?: string;
+  limit?: number;
 };

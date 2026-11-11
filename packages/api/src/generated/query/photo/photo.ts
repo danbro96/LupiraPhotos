@@ -139,9 +139,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DeclarePhotoMutationError = ProblemDetails
     export type DeclarePhotoMutationVariables = {data: DeclarePhotoRequest}
 
-    /**
- * @summary Declare an asset (idempotent) and receive a presigned upload URL while bytes are pending.
- */
+    /** @summary Declare an asset (idempotent) and receive a presigned upload URL while bytes are pending. */
 export const useDeclarePhoto = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof declarePhoto>>, TError,DeclarePhotoMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -214,6 +212,7 @@ export type ListPhotosQueryResult = NonNullable<Awaited<ReturnType<typeof listPh
 export type ListPhotosQueryError = ProblemDetails
 
 
+/** @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash. */
 export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TError = ProblemDetails>(
  params: undefined |  ListPhotosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotos>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -224,6 +223,7 @@ export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TE
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash. */
 export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TError = ProblemDetails>(
  params?: ListPhotosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotos>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -234,14 +234,12 @@ export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TE
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash. */
 export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TError = ProblemDetails>(
  params?: ListPhotosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotos>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash.
- */
-
+/** @summary List assets (keyset-paged, newest taken first by default) with presigned thumbnail URLs. trashed=true lists only the trash. */
 export function useListPhotos<TData = Awaited<ReturnType<typeof listPhotos>>, TError = ProblemDetails>(
  params?: ListPhotosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotos>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -319,9 +317,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CompletePhotoUploadMutationError = ProblemDetails
     export type CompletePhotoUploadMutationVariables = {id: string}
 
-    /**
- * @summary Verify the uploaded bytes and queue processing (idempotent).
- */
+    /** @summary Verify the uploaded bytes and queue processing (idempotent). */
 export const useCompletePhotoUpload = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completePhotoUpload>>, TError,CompletePhotoUploadMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -392,9 +388,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ReprocessPhotoMutationError = ProblemDetails
     export type ReprocessPhotoMutationVariables = {id: string}
 
-    /**
- * @summary Re-queue a Ready or Failed asset through the processing pipeline.
- */
+    /** @summary Re-queue a Ready or Failed asset through the processing pipeline. */
 export const useReprocessPhoto = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reprocessPhoto>>, TError,ReprocessPhotoMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -465,9 +459,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type TrashPhotoMutationError = ProblemDetails
     export type TrashPhotoMutationVariables = {id: string}
 
-    /**
- * @summary Move an asset to the trash (idempotent). It keeps its bytes and status until restored or purged.
- */
+    /** @summary Move an asset to the trash (idempotent). It keeps its bytes and status until restored or purged. */
 export const useTrashPhoto = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof trashPhoto>>, TError,TrashPhotoMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -538,9 +530,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type RestorePhotoMutationError = ProblemDetails
     export type RestorePhotoMutationVariables = {id: string}
 
-    /**
- * @summary Take an asset back out of the trash (idempotent).
- */
+    /** @summary Take an asset back out of the trash (idempotent). */
 export const useRestorePhoto = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof restorePhoto>>, TError,RestorePhotoMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -625,9 +615,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type LookupPhotosMutationError = ProblemDetails
     export type LookupPhotosMutationVariables = {data: LookupPhotosRequest}
 
-    /**
- * @summary Hydrate up to 200 assets by id — turns relation references into renderable items.
- */
+    /** @summary Hydrate up to 200 assets by id — turns relation references into renderable items. */
 export const useLookupPhotos = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lookupPhotos>>, TError,LookupPhotosMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -693,6 +681,7 @@ export type GetPhotoStatsQueryResult = NonNullable<Awaited<ReturnType<typeof get
 export type GetPhotoStatsQueryError = ProblemDetails
 
 
+/** @summary Library totals and counts by kind, status, geotag source and month. */
 export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats>>, TError = ProblemDetails>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhotoStats>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -703,6 +692,7 @@ export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Library totals and counts by kind, status, geotag source and month. */
 export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats>>, TError = ProblemDetails>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhotoStats>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -713,14 +703,12 @@ export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Library totals and counts by kind, status, geotag source and month. */
 export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats>>, TError = ProblemDetails>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhotoStats>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Library totals and counts by kind, status, geotag source and month.
- */
-
+/** @summary Library totals and counts by kind, status, geotag source and month. */
 export function useGetPhotoStats<TData = Awaited<ReturnType<typeof getPhotoStats>>, TError = ProblemDetails>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhotoStats>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -800,6 +788,7 @@ export type ListPhotoPlacesQueryResult = NonNullable<Awaited<ReturnType<typeof l
 export type ListPhotoPlacesQueryError = ProblemDetails
 
 
+/** @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring). */
 export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPlaces>>, TError = ProblemDetails>(
  params: undefined |  ListPhotoPlacesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotoPlaces>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -810,6 +799,7 @@ export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPl
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring). */
 export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPlaces>>, TError = ProblemDetails>(
  params?: ListPhotoPlacesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotoPlaces>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -820,14 +810,12 @@ export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPl
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring). */
 export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPlaces>>, TError = ProblemDetails>(
  params?: ListPhotoPlacesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotoPlaces>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring).
- */
-
+/** @summary Place labels by asset count, most used first — suggestions for the place filter (q = substring). */
 export function useListPhotoPlaces<TData = Awaited<ReturnType<typeof listPhotoPlaces>>, TError = ProblemDetails>(
  params?: ListPhotoPlacesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPhotoPlaces>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -900,6 +888,7 @@ export type GetPhotoQueryResult = NonNullable<Awaited<ReturnType<typeof getPhoto
 export type GetPhotoQueryError = ProblemDetails
 
 
+/** @summary One asset with presigned original + thumbnail URLs. */
 export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError = ProblemDetails>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoto>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -910,6 +899,7 @@ export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary One asset with presigned original + thumbnail URLs. */
 export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoto>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -920,14 +910,12 @@ export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError
       >, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/** @summary One asset with presigned original + thumbnail URLs. */
 export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoto>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary One asset with presigned original + thumbnail URLs.
- */
-
+/** @summary One asset with presigned original + thumbnail URLs. */
 export function useGetPhoto<TData = Awaited<ReturnType<typeof getPhoto>>, TError = ProblemDetails>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPhoto>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
@@ -1005,9 +993,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DeletePhotoMutationError = ProblemDetails
     export type DeletePhotoMutationVariables = {id: string}
 
-    /**
- * @summary Delete an asset permanently, trashed or not: objects first, then the document.
- */
+    /** @summary Delete an asset permanently, trashed or not: objects first, then the document. */
 export const useDeletePhoto = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePhoto>>, TError,DeletePhotoMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -1093,9 +1079,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SetPhotoLocationMutationError = ProblemDetails
     export type SetPhotoLocationMutationVariables = {id: string;data: SetPhotoLocationRequest}
 
-    /**
- * @summary Hand-set the location; outranks the file's own GPS and survives reprocessing.
- */
+    /** @summary Hand-set the location; outranks the file's own GPS and survives reprocessing. */
 export const useSetPhotoLocation = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPhotoLocation>>, TError,SetPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -1166,9 +1150,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ClearPhotoLocationMutationError = ProblemDetails
     export type ClearPhotoLocationMutationVariables = {id: string}
 
-    /**
- * @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent).
- */
+    /** @summary Drop a hand-set location and re-queue the asset so its geotag is re-derived (idempotent). */
 export const useClearPhotoLocation = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearPhotoLocation>>, TError,ClearPhotoLocationMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -1253,9 +1235,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type RelocatePhotosMutationError = ProblemDetails
     export type RelocatePhotosMutationVariables = {data: RelocatePhotosRequest}
 
-    /**
- * @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews.
- */
+    /** @summary Hand-set one location on every asset a selector matches (ids, or a time window narrowed by camera and current coordinate). dryRun previews. */
 export const useRelocatePhotos = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof relocatePhotos>>, TError,RelocatePhotosMutationVariables, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<
@@ -1326,9 +1306,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type EmptyPhotoTrashMutationError = ProblemDetails
 
 
-    /**
- * @summary Permanently delete every trashed asset.
- */
+    /** @summary Permanently delete every trashed asset. */
 export const useEmptyPhotoTrash = <TError = ProblemDetails,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emptyPhotoTrash>>, TError,void, TContext>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient): UseMutationResult<

@@ -6,6 +6,6 @@
  */
 
 export type ForwardGeocodeParams = {
-q: string;
-limit?: number;
+  q: string;
+  limit?: number;
 };
