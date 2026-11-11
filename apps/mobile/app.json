@@ -75,6 +75,15 @@
             "extraProguardRules": "-keep class * extends androidx.room.RoomDatabase { <init>(); }\n-keepclassmembers class * extends androidx.work.InputMerger { public <init>(); }"
           }
         }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://de.sentry.io/",
+          "project": "lupira-photos",
+          "organization": "brostrom",
+          "experimental_android": { "enableAndroidGradlePlugin": true }
+        }
       ]
     ],
     "experiments": {
