@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@danbro96/lupira-domain-core": "0.1.0",
-    "@danbro96/lupira-domain-places": "0.1.0"
+    "@danbro96/lupira-domain-places": "0.3.0"
   },
   "devDependencies": {
     "@danbro96/lupira-config-eslint": "0.4.1"
